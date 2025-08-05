@@ -16,6 +16,7 @@ const AdminLayout: React.FC = () => {
             <li><NavLink to="/admin/dashboard" className={navLinkClasses}>Dashboard</NavLink></li>
             <li className="mt-2"><NavLink to="/admin/users" className={navLinkClasses}>Usuários</NavLink></li>
             <li className="mt-2"><NavLink to="/admin/deposits" className={navLinkClasses}>Depósitos</NavLink></li>
+            <li className="mt-2"><NavLink to="/admin/withdrawals" className={navLinkClasses}>Saques</NavLink></li>
           </ul>
         </nav>
       </aside>

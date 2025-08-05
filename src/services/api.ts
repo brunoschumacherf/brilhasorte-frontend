@@ -14,7 +14,8 @@ import type {
   AdminDashboardStats,
   Game,
   AdminUserListItem,
-  AdminDepositListItem
+  AdminDepositListItem,
+  AdminWithdrawalListItem
 } from '../types';
 
 const api = axios.create({
@@ -87,6 +88,8 @@ export const resetPassword = (password: string, password_confirmation: string, r
 export const getAdminUserList = () => api.get<JsonApiCollection<AdminUserListItem>>('/api/v1/admin/users');
 
 export const getAdminDepositList = () => api.get<JsonApiCollection<AdminDepositListItem>>('/api/v1/admin/deposits');
+
+export const getAdminWithdrawalList = () => api.get<JsonApiCollection<AdminWithdrawalListItem>>('/api/v1/admin/withdrawals');
 
 
 export default api;

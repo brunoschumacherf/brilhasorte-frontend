@@ -35,6 +35,19 @@ export interface AdminDepositListItem {
   };
 }
 
+export interface AdminWithdrawalListItem {
+  id: number;
+  amount_in_cents: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  pix_key_type: string;
+  pix_key: string;
+  created_at: string;
+  user: {
+    id: number;
+    full_name: string | null;
+    email: string;
+  };
+}
 
 export interface ScratchCard {
   id: string;

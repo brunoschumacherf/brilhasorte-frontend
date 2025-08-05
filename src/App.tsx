@@ -19,7 +19,8 @@ import ReferralsPage from './pages/ReferralsPage';
 // Páginas de Admin
 import DashboardPage from './pages/Admin/DashboardPage';
 import UsersPage from './pages/Admin/UsersPage';
-import DepositsPage from './pages/Admin/DepositsPage'; // Importar nova página
+import DepositsPage from './pages/Admin/DepositsPage';
+import WithdrawalsPage from './pages/Admin/WithdrawalsPage'; // Importar nova página
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -58,6 +59,7 @@ function App() {
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="deposits" element={<DepositsPage />} />
+            <Route path="withdrawals" element={<WithdrawalsPage />} />
           </Route>
 
           {/* Redirecionamento Padrão */}
