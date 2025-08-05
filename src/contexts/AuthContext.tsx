@@ -10,7 +10,8 @@ interface AuthContextType {
   register: RegisterFunction;
   logout: () => void;
   updateBalance: (newBalanceInCents: number) => void;
-  updateUserDetails: (newDetails: Partial<User>) => void; // Nova função
+  updateUserDetails: (newDetails: Partial<User>) => void;
+  setDailyGameClaimed: () => void; // Nova função
   loading: boolean;
   isAuthenticated: boolean;
 }
@@ -56,13 +57,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(currentUser => currentUser ? { ...currentUser, balance_in_cents: newBalanceInCents } : null);
   }, []);
 
-  // NOVA FUNÇÃO: Atualiza os detalhes do usuário no estado
   const updateUserDetails = useCallback((newDetails: Partial<User>) => {
     setUser(currentUser => currentUser ? { ...currentUser, ...newDetails } : null);
   }, []);
+  
+  // NOVA FUNÇÃO: Define que o jogo diário foi resgatado
+  const setDailyGameClaimed = useCallback(() => {
+    setUser(currentUser => currentUser ? { ...currentUser, can_claim_daily_game: false } : null);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateBalance, updateUserDetails, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateBalance, updateUserDetails, setDailyGameClaimed, loading, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

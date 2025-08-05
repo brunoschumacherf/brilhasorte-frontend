@@ -9,6 +9,7 @@ export interface User {
   created_at: string;
   referral_code?: string;
   admin: boolean;
+  can_claim_daily_game?: boolean; // Adicionar propriedade opcional
 }
 
 export interface ScratchCard {
@@ -66,36 +67,24 @@ export interface Referee {
   has_deposited: boolean;
 }
 
-// NOVO TIPO: Item do histórico de jogos
 export interface GameHistoryItem {
   id: number;
   winnings_in_cents: number;
   created_at: string;
-  // A API aninha os dados do prêmio e da raspadinha dentro do histórico
   prize: { name: string };
   scratch_card: { name: string };
 }
 
-
-// Tipos genéricos para a resposta da API JSON:API
-export interface JsonApiData<T> {
-  id: string;
-  type: string;
-  attributes: T;
-  // Adicionando relationships para o histórico de jogos
-  relationships?: {
-    prize: { data: { id: string, type: 'prize' } };
-    scratch_card: { data: { id: string, type: 'scratch_card' } };
+export interface Game {
+  id: string; 
+  type: 'game';
+  attributes: {
+    id: number;
+    status: 'pending' | 'finished';
+    game_hash: string;
+    created_at: string;
+    winnings_in_cents: number;
   };
-}
-
-export interface JsonApiCollection<T, I = any> {
-  data: JsonApiData<T>[];
-  included?: JsonApiData<I>[];
-}
-
-export interface JsonApiSingular<T> {
-  data: JsonApiData<T>;
 }
 
 export interface AdminDashboardStats {
@@ -106,4 +95,20 @@ export interface AdminDashboardStats {
   new_users: number;
   total_users: number;
   games_played: number;
+}
+
+export interface JsonApiData<T> {
+  id: string;
+  type: string;
+  attributes: T;
+  relationships?: any;
+}
+
+export interface JsonApiCollection<T, I = any> {
+  data: JsonApiData<T>[];
+  included?: JsonApiData<I>[];
+}
+
+export interface JsonApiSingular<T> {
+  data: JsonApiData<T>;
 }

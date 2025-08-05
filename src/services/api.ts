@@ -11,7 +11,8 @@ import type {
   GameHistoryItem, // Importar novo tipo
   JsonApiSingular,
   JsonApiCollection,
-  AdminDashboardStats
+  AdminDashboardStats,
+  Game
 } from '../types';
 
 const api = axios.create({
@@ -70,5 +71,8 @@ export const getReferrals = () => api.get<JsonApiCollection<Referee>>('/api/v1/r
 
 export const getAdminDashboardStats = (period: RankingPeriod) =>
   api.get<{ period: string; statistics: AdminDashboardStats }>(`/api/v1/admin/dashboard?period=${period}`);
+
+export const playFreeDailyGame = () => api.post<JsonApiSingular<Game>>('/api/v1/games/play_free_daily');
+
 
 export default api;
