@@ -7,7 +7,7 @@ export interface User {
   phone_number: string | null;
   balance_in_cents: number;
   created_at: string;
-  referral_code?: string; 
+  referral_code?: string;
 }
 
 export interface ScratchCard {
@@ -58,7 +58,6 @@ export interface RankingItem {
   total_winnings: number;
 }
 
-// NOVO TIPO: Item da lista de referências (usuário indicado)
 export interface Referee {
   id: number;
   full_name: string | null;
@@ -66,15 +65,32 @@ export interface Referee {
   has_deposited: boolean;
 }
 
+// NOVO TIPO: Item do histórico de jogos
+export interface GameHistoryItem {
+  id: number;
+  winnings_in_cents: number;
+  created_at: string;
+  // A API aninha os dados do prêmio e da raspadinha dentro do histórico
+  prize: { name: string };
+  scratch_card: { name: string };
+}
+
+
 // Tipos genéricos para a resposta da API JSON:API
 export interface JsonApiData<T> {
   id: string;
   type: string;
   attributes: T;
+  // Adicionando relationships para o histórico de jogos
+  relationships?: {
+    prize: { data: { id: string, type: 'prize' } };
+    scratch_card: { data: { id: string, type: 'scratch_card' } };
+  };
 }
 
-export interface JsonApiCollection<T> {
+export interface JsonApiCollection<T, I = any> {
   data: JsonApiData<T>[];
+  included?: JsonApiData<I>[];
 }
 
 export interface JsonApiSingular<T> {
