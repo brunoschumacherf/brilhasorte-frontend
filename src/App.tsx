@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import GamesPage from './pages/GamesPage';
 import ProfilePage from './pages/ProfilePage';
+import GameRevealPage from './pages/GameRevealPage';
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
