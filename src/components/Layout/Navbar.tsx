@@ -23,6 +23,11 @@ const Navbar: React.FC = () => {
           <ul className="flex items-center space-x-2 md:space-x-4">
             {isAuthenticated && user ? (
               <>
+                {/* Link Condicional para o Dashboard Admin */}
+                {user.admin && (
+                  <li><Link to="/admin/dashboard" className="px-3 py-2 text-sm rounded-md bg-purple-600 hover:bg-purple-700">Admin</Link></li>
+                )}
+
                 <li className="hidden lg:block"><span className="font-semibold">Saldo: R$ {(user.balance_in_cents / 100).toFixed(2)}</span></li>
                 <li><button onClick={() => setIsWithdrawalModalOpen(true)} className="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 text-sm md:px-4 rounded-md transition-colors">Sacar</button></li>
                 <li><button onClick={() => setIsDepositModalOpen(true)} className="bg-green-500 hover:bg-green-600 px-3 py-2 text-sm md:px-4 rounded-md transition-colors">Depositar</button></li>

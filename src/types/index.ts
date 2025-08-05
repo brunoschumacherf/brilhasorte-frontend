@@ -8,6 +8,7 @@ export interface User {
   balance_in_cents: number;
   created_at: string;
   referral_code?: string;
+  admin: boolean;
 }
 
 export interface ScratchCard {
@@ -95,4 +96,14 @@ export interface JsonApiCollection<T, I = any> {
 
 export interface JsonApiSingular<T> {
   data: JsonApiData<T>;
+}
+
+export interface AdminDashboardStats {
+  total_deposited_in_cents: number;
+  total_won_in_cents: number;
+  total_spent_on_games_in_cents: number;
+  gross_gaming_revenue_in_cents: number;
+  new_users: number;
+  total_users: number;
+  games_played: number;
 }

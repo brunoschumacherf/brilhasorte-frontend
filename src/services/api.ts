@@ -10,7 +10,8 @@ import type {
   Referee,
   GameHistoryItem, // Importar novo tipo
   JsonApiSingular,
-  JsonApiCollection
+  JsonApiCollection,
+  AdminDashboardStats
 } from '../types';
 
 const api = axios.create({
@@ -65,5 +66,9 @@ export const getRankings = (period: RankingPeriod) =>
 
 // Afiliados/Referências
 export const getReferrals = () => api.get<JsonApiCollection<Referee>>('/api/v1/referrals');
+
+
+export const getAdminDashboardStats = (period: RankingPeriod) =>
+  api.get<{ period: string; statistics: AdminDashboardStats }>(`/api/v1/admin/dashboard?period=${period}`);
 
 export default api;
