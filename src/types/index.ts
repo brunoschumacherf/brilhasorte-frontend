@@ -7,6 +7,7 @@ export interface User {
   phone_number: string | null;
   balance_in_cents: number;
   created_at: string;
+  referral_code?: string; 
 }
 
 export interface ScratchCard {
@@ -52,10 +53,17 @@ export interface WithdrawalHistoryItem {
   created_at: string;
 }
 
-// NOVO TIPO: Item da lista de ranking
 export interface RankingItem {
   full_name: string;
   total_winnings: number;
+}
+
+// NOVO TIPO: Item da lista de referências (usuário indicado)
+export interface Referee {
+  id: number;
+  full_name: string | null;
+  created_at: string;
+  has_deposited: boolean;
 }
 
 // Tipos genéricos para a resposta da API JSON:API

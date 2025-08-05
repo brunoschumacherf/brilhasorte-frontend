@@ -6,7 +6,8 @@ import type {
   DepositHistoryItem,
   WithdrawalRequest,
   WithdrawalHistoryItem,
-  RankingItem, // Importar novo tipo
+  RankingItem,
+  Referee, // Importar novo tipo
   JsonApiSingular,
   JsonApiCollection
 } from '../types';
@@ -54,9 +55,12 @@ export const createWithdrawal = (withdrawalData: WithdrawalRequest) =>
   api.post('/api/v1/withdrawals', { withdrawal: withdrawalData });
 export const getWithdrawalHistory = () => api.get<JsonApiCollection<WithdrawalHistoryItem>>('/api/v1/withdrawals');
 
-// NOVA FUNÇÃO: Rankings
+// Rankings
 export type RankingPeriod = 'daily' | 'weekly' | 'monthly' | 'all_time';
 export const getRankings = (period: RankingPeriod) => 
   api.get<{ period: string; ranking: RankingItem[] }>(`/api/v1/rankings?period=${period}`);
+
+// NOVA FUNÇÃO: Afiliados/Referências
+export const getReferrals = () => api.get<JsonApiCollection<Referee>>('/api/v1/referrals');
 
 export default api;

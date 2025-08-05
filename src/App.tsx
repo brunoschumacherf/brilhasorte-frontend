@@ -9,7 +9,8 @@ import GamesPage from './pages/GamesPage';
 import ProfilePage from './pages/ProfilePage';
 import GameRevealPage from './pages/GameRevealPage';
 import HistoryPage from './pages/HistoryPage';
-import RankingsPage from './pages/RankingsPage'; // Importar nova página
+import RankingsPage from './pages/RankingsPage';
+import ReferralsPage from './pages/ReferralsPage'; // Importar nova página
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -36,7 +37,8 @@ function App() {
               <Route path="/games/:gameId" element={<PrivateRoute><GameRevealPage /></PrivateRoute>} />
               <Route path="/profile" element={<PrivateRoute><ProfilePage /></PrivateRoute>} />
               <Route path="/history" element={<PrivateRoute><HistoryPage /></PrivateRoute>} />
-              <Route path="/rankings" element={<PrivateRoute><RankingsPage /></PrivateRoute>} /> {/* Nova rota */}
+              <Route path="/rankings" element={<PrivateRoute><RankingsPage /></PrivateRoute>} />
+              <Route path="/referrals" element={<PrivateRoute><ReferralsPage /></PrivateRoute>} /> {/* Nova rota */}
 
               {/* Redirecionamento Padrão */}
               <Route path="*" element={<Navigate to="/games" />} />

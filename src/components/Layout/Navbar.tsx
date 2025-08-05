@@ -19,30 +19,18 @@ const Navbar: React.FC = () => {
     <>
       <nav className="bg-gray-800 text-white shadow-lg">
         <div className="container mx-auto px-6 py-3 flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold">BrilhaSorte</Link>
+          <Link to="/games" className="text-2xl font-bold">BrilhaSorte</Link>
           <ul className="flex items-center space-x-2 md:space-x-4">
             {isAuthenticated && user ? (
               <>
                 <li className="hidden lg:block"><span className="font-semibold">Saldo: R$ {(user.balance_in_cents / 100).toFixed(2)}</span></li>
-                <li>
-                  <button onClick={() => setIsWithdrawalModalOpen(true)} className="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 text-sm md:px-4 rounded-md transition-colors">
-                    Sacar
-                  </button>
-                </li>
-                <li>
-                  <button onClick={() => setIsDepositModalOpen(true)} className="bg-green-500 hover:bg-green-600 px-3 py-2 text-sm md:px-4 rounded-md transition-colors">
-                    Depositar
-                  </button>
-                </li>
-                <li><Link to="/games" className="hover:text-yellow-400">Jogos</Link></li>
+                <li><button onClick={() => setIsWithdrawalModalOpen(true)} className="bg-yellow-500 hover:bg-yellow-600 px-3 py-2 text-sm md:px-4 rounded-md transition-colors">Sacar</button></li>
+                <li><button onClick={() => setIsDepositModalOpen(true)} className="bg-green-500 hover:bg-green-600 px-3 py-2 text-sm md:px-4 rounded-md transition-colors">Depositar</button></li>
+                <li><Link to="/referrals" className="hover:text-yellow-400">Afiliados</Link></li>
                 <li><Link to="/rankings" className="hover:text-yellow-400">Rankings</Link></li>
                 <li><Link to="/history" className="hover:text-yellow-400">Histórico</Link></li>
                 <li><Link to="/profile" className="hover:text-yellow-400">Perfil</Link></li>
-                <li>
-                  <button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-3 py-2 text-sm md:px-4 rounded-md transition-colors">
-                    Sair
-                  </button>
-                </li>
+                <li><button onClick={handleLogout} className="bg-red-500 hover:bg-red-600 px-3 py-2 text-sm md:px-4 rounded-md transition-colors">Sair</button></li>
               </>
             ) : (
               <>
