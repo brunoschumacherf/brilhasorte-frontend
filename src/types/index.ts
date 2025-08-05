@@ -9,8 +9,19 @@ export interface User {
   created_at: string;
   referral_code?: string;
   admin: boolean;
-  can_claim_daily_game?: boolean; // Adicionar propriedade opcional
+  can_claim_daily_game?: boolean;
 }
+
+export interface AdminUserListItem {
+    id: number;
+    email: string;
+    full_name: string | null;
+    balance_in_cents: number;
+    created_at: string;
+    games_count: number;
+    deposits_count: number;
+}
+
 
 export interface ScratchCard {
   id: string;
@@ -76,7 +87,7 @@ export interface GameHistoryItem {
 }
 
 export interface Game {
-  id: string; 
+  id: string;
   type: 'game';
   attributes: {
     id: number;

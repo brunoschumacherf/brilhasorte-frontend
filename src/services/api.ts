@@ -8,11 +8,12 @@ import type {
   WithdrawalHistoryItem,
   RankingItem,
   Referee,
-  GameHistoryItem, // Importar novo tipo
+  GameHistoryItem,
   JsonApiSingular,
   JsonApiCollection,
   AdminDashboardStats,
-  Game
+  Game,
+  AdminUserListItem
 } from '../types';
 
 const api = axios.create({
@@ -81,5 +82,7 @@ export const resetPassword = (password: string, password_confirmation: string, r
   api.put('/password', { 
     user: { password, password_confirmation, reset_password_token } 
   });
+
+export const getAdminUserList = () => api.get<JsonApiCollection<AdminUserListItem>>('/api/v1/admin/users');
 
 export default api;
