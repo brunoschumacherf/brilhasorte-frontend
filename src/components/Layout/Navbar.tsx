@@ -8,8 +8,7 @@ const Navbar: React.FC = () => {
   const { isAuthenticated, user, logout } = useAuth();
   const navigate = useNavigate();
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
-  const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false); 
-
+  const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -36,6 +35,7 @@ const Navbar: React.FC = () => {
                   </button>
                 </li>
                 <li><Link to="/games" className="hover:text-yellow-400">Jogos</Link></li>
+                <li><Link to="/rankings" className="hover:text-yellow-400">Rankings</Link></li>
                 <li><Link to="/history" className="hover:text-yellow-400">Histórico</Link></li>
                 <li><Link to="/profile" className="hover:text-yellow-400">Perfil</Link></li>
                 <li>

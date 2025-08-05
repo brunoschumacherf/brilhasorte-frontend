@@ -52,6 +52,13 @@ export interface WithdrawalHistoryItem {
   created_at: string;
 }
 
+// NOVO TIPO: Item da lista de ranking
+export interface RankingItem {
+  full_name: string;
+  total_winnings: number;
+}
+
+// Tipos genéricos para a resposta da API JSON:API
 export interface JsonApiData<T> {
   id: string;
   type: string;
