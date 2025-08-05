@@ -22,6 +22,19 @@ export interface AdminUserListItem {
     deposits_count: number;
 }
 
+export interface AdminDepositListItem {
+  id: number;
+  amount_in_cents: number;
+  bonus_in_cents: number;
+  status: 'pending' | 'completed' | 'error';
+  created_at: string;
+  user: {
+    id: number;
+    full_name: string | null;
+    email: string;
+  };
+}
+
 
 export interface ScratchCard {
   id: string;

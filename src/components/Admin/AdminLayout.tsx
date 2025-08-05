@@ -8,30 +8,19 @@ const AdminLayout: React.FC = () => {
     }`;
 
   return (
-    <div className="flex">
-      {/* Sidebar */}
-      <aside className="w-64 bg-gray-800 text-white p-4">
+    <div className="flex min-h-screen">
+      <aside className="w-64 bg-gray-800 text-white p-4 flex-shrink-0">
         <h2 className="text-xl font-bold mb-6">Admin</h2>
         <nav>
           <ul>
-            <li>
-              <NavLink to="/admin/dashboard" className={navLinkClasses}>
-                Dashboard
-              </NavLink>
-            </li>
-            <li className="mt-2">
-              <NavLink to="/admin/users" className={navLinkClasses}>
-                Usuários
-              </NavLink>
-            </li>
-            {/* Adicionar mais links aqui no futuro (Jogos, Depósitos, etc.) */}
+            <li><NavLink to="/admin/dashboard" className={navLinkClasses}>Dashboard</NavLink></li>
+            <li className="mt-2"><NavLink to="/admin/users" className={navLinkClasses}>Usuários</NavLink></li>
+            <li className="mt-2"><NavLink to="/admin/deposits" className={navLinkClasses}>Depósitos</NavLink></li>
           </ul>
         </nav>
       </aside>
-
-      {/* Conteúdo da Página */}
-      <main className="flex-1 p-6 bg-gray-100">
-        <Outlet /> {/* As rotas aninhadas serão renderizadas aqui */}
+      <main className="flex-1 p-6 bg-gray-100 overflow-y-auto">
+        <Outlet />
       </main>
     </div>
   );
