@@ -1,13 +1,16 @@
 import React, { createContext, useState, useEffect, useContext, type ReactNode, useCallback } from 'react';
 import { login as apiLogin, register as apiRegister, getProfile } from '../services/api';
-import { type User } from '../types';
+import type { User } from '../types';
+
+type RegisterFunction = (userData: Omit<User, 'id' | 'balance_in_cents' | 'created_at'> & { password: any, password_confirmation: any }) => Promise<void>;
 
 interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<void>;
-  register: (userData: any) => Promise<void>;
+  register: RegisterFunction;
   logout: () => void;
-  updateBalance: (newBalanceInCents: number) => void; // Nova função
+  updateBalance: (newBalanceInCents: number) => void;
+  updateUserDetails: (newDetails: Partial<User>) => void; // Nova função
   loading: boolean;
   isAuthenticated: boolean;
 }
@@ -18,60 +21,53 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // ... (useEffect e outras funções existentes)
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       getProfile()
-        .then(response => {
-          setUser(response.data.data.attributes);
-        })
-        .catch(() => {
-          localStorage.removeItem('token');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
+        .then(response => { setUser(response.data.data.attributes); })
+        .catch(() => { localStorage.removeItem('token'); })
+        .finally(() => { setLoading(false); });
     } else {
       setLoading(false);
     }
   }, []);
-  
+
   const login = async (email: string, password: string) => {
     const response = await apiLogin({ email, password });
     localStorage.setItem('token', response.headers.authorization.split(' ')[1]);
     const profileResponse = await getProfile();
     setUser(profileResponse.data.data.attributes);
   };
-  
-  const register = async (userData: any) => {
+
+  const register: RegisterFunction = async (userData) => {
     const response = await apiRegister(userData);
     localStorage.setItem('token', response.headers.authorization.split(' ')[1]);
     const profileResponse = await getProfile();
     setUser(profileResponse.data.data.attributes);
   };
-
+  
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
   };
   
-  // Função para atualizar o saldo do usuário no estado global
   const updateBalance = useCallback((newBalanceInCents: number) => {
-    setUser(currentUser => {
-      if (!currentUser) return null;
-      return { ...currentUser, balance_in_cents: newBalanceInCents };
-    });
+    setUser(currentUser => currentUser ? { ...currentUser, balance_in_cents: newBalanceInCents } : null);
+  }, []);
+
+  // NOVA FUNÇÃO: Atualiza os detalhes do usuário no estado
+  const updateUserDetails = useCallback((newDetails: Partial<User>) => {
+    setUser(currentUser => currentUser ? { ...currentUser, ...newDetails } : null);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateBalance, loading, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateBalance, updateUserDetails, loading, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-// ... (hook useAuth existente)
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
