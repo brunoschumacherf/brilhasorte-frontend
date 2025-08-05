@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom'; // Importar Link
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -44,6 +44,11 @@ const Login: React.FC = () => {
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
             required
           />
+        </div>
+        <div className="text-right mb-6">
+          <Link to="/forgot-password" className="text-sm text-blue-600 hover:underline">
+            Esqueceu a senha?
+          </Link>
         </div>
         <button type="submit" className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition-colors">
           Entrar

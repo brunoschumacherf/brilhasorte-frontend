@@ -74,5 +74,12 @@ export const getAdminDashboardStats = (period: RankingPeriod) =>
 
 export const playFreeDailyGame = () => api.post<JsonApiSingular<Game>>('/api/v1/games/play_free_daily');
 
+export const requestPasswordReset = (email: string) => 
+  api.post('/password', { user: { email } });
+
+export const resetPassword = (password: string, password_confirmation: string, reset_password_token: string) => 
+  api.put('/password', { 
+    user: { password, password_confirmation, reset_password_token } 
+  });
 
 export default api;
