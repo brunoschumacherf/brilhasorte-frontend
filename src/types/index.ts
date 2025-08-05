@@ -30,6 +30,28 @@ export interface DepositResponse {
   pix_qr_code_image_base64: string;
 }
 
+export interface DepositHistoryItem {
+    id: number;
+    amount_in_cents: number;
+    status: 'pending' | 'completed' | 'error';
+    created_at: string;
+}
+
+export interface WithdrawalRequest {
+  amount_in_cents: number;
+  pix_key_type: string;
+  pix_key: string;
+}
+
+export interface WithdrawalHistoryItem {
+  id: number;
+  amount_in_cents: number;
+  status: 'pending' | 'processing' | 'completed' | 'failed';
+  pix_key_type: string;
+  pix_key: string;
+  created_at: string;
+}
+
 export interface JsonApiData<T> {
   id: string;
   type: string;
