@@ -21,7 +21,8 @@ import DashboardPage from './pages/Admin/DashboardPage';
 import UsersPage from './pages/Admin/UsersPage';
 import DepositsPage from './pages/Admin/DepositsPage';
 import WithdrawalsPage from './pages/Admin/WithdrawalsPage';
-import AdminGamesPage from './pages/Admin/GamesPage'; // Importar nova página
+import AdminGamesPage from './pages/Admin/GamesPage';
+import BonusCodesPage from './pages/Admin/BonusCodesPage'; // Importar nova página
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -57,6 +58,7 @@ function App() {
             <Route path="deposits" element={<DepositsPage />} />
             <Route path="withdrawals" element={<WithdrawalsPage />} />
             <Route path="games" element={<AdminGamesPage />} />
+            <Route path="bonus-codes" element={<BonusCodesPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/games" />} />

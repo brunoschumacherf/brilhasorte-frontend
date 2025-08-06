@@ -68,6 +68,16 @@ export interface AdminGameListItem {
   };
 }
 
+export interface AdminBonusCode {
+  id: number;
+  code: string;
+  bonus_percentage: number;
+  expires_at: string | null;
+  max_uses: number;
+  uses_count: number;
+  is_active: boolean;
+  created_at: string;
+}
 
 export interface ScratchCard {
   id: string;

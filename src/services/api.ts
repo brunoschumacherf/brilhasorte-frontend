@@ -16,7 +16,8 @@ import type {
   AdminUserListItem,
   AdminDepositListItem,
   AdminWithdrawalListItem,
-  AdminGameListItem
+  AdminGameListItem,
+  AdminBonusCode
 } from '../types';
 
 const api = axios.create({
@@ -94,5 +95,10 @@ export const getAdminWithdrawalList = () => api.get<JsonApiCollection<AdminWithd
 
 export const getAdminGameList = () => api.get<JsonApiCollection<AdminGameListItem>>('/api/v1/admin/games');
 
+export const getAdminBonusCodeList = () => api.get<JsonApiCollection<AdminBonusCode>>('/api/v1/admin/bonus_codes');
+export const createAdminBonusCode = (data: Partial<AdminBonusCode>) => 
+  api.post<JsonApiSingular<AdminBonusCode>>('/api/v1/admin/bonus_codes', { bonus_code: data });
+export const updateAdminBonusCode = (id: number, data: Partial<AdminBonusCode>) => 
+  api.put<JsonApiSingular<AdminBonusCode>>(`/api/v1/admin/bonus_codes/${id}`, { bonus_code: data });
 
 export default api;
