@@ -109,6 +109,7 @@ export const createAdminScratchCard = (data: any) =>
   api.post<JsonApiSingular<AdminScratchCard>>('/api/v1/admin/scratch_cards', { scratch_card: data });
 export const updateAdminScratchCard = (id: number, data: any) => 
   api.patch<JsonApiSingular<AdminScratchCard>>(`/api/v1/admin/scratch_cards/${id}`, { scratch_card: data });
+export const getAdminScratchCardDetails = (id: number) => api.get<JsonApiSingular<AdminScratchCard>>(`/api/v1/admin/scratch_cards/${id}`);
 
 
 export default api;

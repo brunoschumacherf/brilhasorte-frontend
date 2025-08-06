@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getScratchCards, createGame } from '../../services/api';
 import type { ScratchCard } from '../../types';
+import { toast } from 'react-toastify'; // Importar toast
 
 const ScratchCardList: React.FC = () => {
   const [scratchCards, setScratchCards] = useState<ScratchCard[]>([]);
@@ -10,11 +11,11 @@ const ScratchCardList: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Filtra para não mostrar a raspadinha de preço 0 (o jogo grátis)
     getScratchCards()
       .then(response => {
-        const paidCards = response.data.data.filter(card => card.attributes.price_in_cents > 0);
-        setScratchCards(paidCards);
+        const paidCardsData = response.data.data.filter(card => card.attributes.price_in_cents > 0);
+        const formattedCards = paidCardsData.map(card => card.attributes);
+        setScratchCards(formattedCards);
       })
       .catch(() => {
         setError('Não foi possível carregar as raspadinhas.');
@@ -24,13 +25,16 @@ const ScratchCardList: React.FC = () => {
       });
   }, []);
 
-  const handleBuyCard = async (cardId: string) => {
+  const handleBuyCard = async (card: ScratchCard) => {
     try {
-      const result = await createGame(cardId);
+      const result = await createGame(String(card.id)); // O endpoint espera o ID como string
       const gameId = result.data.data.id;
       navigate(`/games/${gameId}`);
     } catch (err: any) {
-      alert(err.response?.data?.error || 'Erro ao comprar a raspadinha. Saldo insuficiente?');
+      // --- CORREÇÃO AQUI ---
+      // Substituímos o alert() por toast.error()
+      const errorMessage = err.response?.data?.error || 'Erro ao comprar. Saldo insuficiente ou jogo indisponível.';
+      toast.error(errorMessage);
     }
   };
 
@@ -52,10 +56,10 @@ const ScratchCardList: React.FC = () => {
             className="group bg-[var(--surface-dark)] border border-[var(--border-color)] rounded-xl overflow-hidden transition-all duration-300 ease-in-out hover:border-[var(--primary-gold)] hover:shadow-2xl hover:shadow-yellow-500/10"
           >
             <div className="h-48 bg-black flex items-center justify-center overflow-hidden">
-              {card.attributes.image_url ? (
+              {card.image_url ? (
                 <img 
-                  src={card.attributes.image_url} 
-                  alt={card.attributes.name} 
+                  src={card.image_url} 
+                  alt={card.name} 
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
                 />
               ) : (
@@ -64,12 +68,12 @@ const ScratchCardList: React.FC = () => {
             </div>
             
             <div className="p-5 text-center">
-              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-1 truncate">{card.attributes.name}</h3>
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-1 truncate">{card.name}</h3>
               <p className="text-[var(--primary-gold)] text-2xl font-semibold mb-5">
-                R$ {(card.attributes.price_in_cents / 100).toFixed(2)}
+                R$ {(card.price_in_cents / 100).toFixed(2)}
               </p>
               <button
-                onClick={() => handleBuyCard(card.id)}
+                onClick={() => handleBuyCard(card)}
                 className="w-full bg-[var(--primary-gold)] text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-yellow-500/20 hover:bg-yellow-300"
               >
                 Jogar Agora

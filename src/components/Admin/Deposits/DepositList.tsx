@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAdminDepositList } from '../../../services/api';
 import type { AdminDepositListItem } from '../../../types';
+import TableSkeleton from '../../Shared/TableSkeleton'; // Importar o skeleton
 
 const DepositList: React.FC = () => {
   const [deposits, setDeposits] = useState<AdminDepositListItem[]>([]);
@@ -8,26 +9,29 @@ const DepositList: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getAdminDepositList()
-      .then(response => {
-        const includedData = response.data.included || [];
-        const depositData = response.data.data.map(item => {
-          const userRel = item.relationships?.user.data;
-          const user = includedData.find(inc => inc.id === userRel?.id && inc.type === 'user');
-          return {
-            ...item.attributes,
-            id: parseInt(item.id),
-            user: user?.attributes as any || { id: null, full_name: 'N/A', email: 'N/A' },
-          };
+    // Adicionando um pequeno delay para que o skeleton seja visível
+    setTimeout(() => {
+      getAdminDepositList()
+        .then(response => {
+          const includedData = response.data.included || [];
+          const depositData = response.data.data.map(item => {
+            const userRel = item.relationships?.user.data;
+            const user = includedData.find(inc => inc.id === userRel?.id && inc.type === 'user');
+            return {
+              ...item.attributes,
+              id: parseInt(item.id),
+              user: user?.attributes as any || { id: null, full_name: 'N/A', email: 'N/A' },
+            };
+          });
+          setDeposits(depositData);
+        })
+        .catch(() => {
+          setError('Não foi possível carregar a lista de depósitos.');
+        })
+        .finally(() => {
+          setLoading(false);
         });
-        setDeposits(depositData);
-      })
-      .catch(() => {
-        setError('Não foi possível carregar a lista de depósitos.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    }, 500);
   }, []);
   
   const getStatusClass = (status: string) => {
@@ -39,17 +43,15 @@ const DepositList: React.FC = () => {
     }
   };
 
-  if (loading) return <p>Carregando depósitos...</p>;
+  if (loading) return <TableSkeleton rows={10} cols={5} />; // Usar o skeleton
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4">Gerenciamento de Depósitos</h1>
+    <div className="bg-white rounded-lg shadow">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bônus</th>
@@ -59,20 +61,25 @@ const DepositList: React.FC = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {deposits.map((deposit) => (
-              <tr key={deposit.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{deposit.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  <div>{deposit.user.full_name || 'N/A'}</div>
-                  <div className="text-xs text-gray-500">{deposit.user.email}</div>
+              <tr key={deposit.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{deposit.user.full_name || 'N/A'}</div>
+                  <div className="text-sm text-gray-500">{deposit.user.email}</div>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R$ {(deposit.amount_in_cents / 100).toFixed(2)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">R$ {(deposit.bonus_in_cents / 100).toFixed(2)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                  R$ {(deposit.amount_in_cents / 100).toFixed(2)}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">
+                  R$ {(deposit.bonus_in_cents / 100).toFixed(2)}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(deposit.status)}`}>
                     {deposit.status}
                   </span>
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(deposit.created_at).toLocaleString('pt-BR')}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {new Date(deposit.created_at).toLocaleString('pt-BR')}
+                </td>
               </tr>
             ))}
           </tbody>

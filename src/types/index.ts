@@ -100,18 +100,11 @@ export interface AdminScratchCard {
 }
 
 export interface ScratchCard {
-  name: string | undefined;
-  image_url: string | undefined;
+  id: number;
+  name: string;
   price_in_cents: number;
-  id: string;
-  type: 'scratch_card';
-  attributes: {
-    id: number;
-    name: string;
-    price_in_cents: number;
-    description: string | null;
-    image_url: string | null;
-  };
+  description: string | null;
+  image_url: string | null;
 }
 
 export interface DepositResponse {
@@ -165,8 +158,19 @@ export interface GameHistoryItem {
   scratch_card: { name: string };
 }
 
+// Tipo atualizado para o prêmio
+export interface PrizeAttributes {
+  id: number;
+  name: string;
+  value_in_cents: number;
+  image_url: string | null;
+  probability: number;
+}
+
+// Tipo atualizado para o jogo, incluindo a lista de prêmios
 export interface Game {
   status: string;
+  scratch_card_prize: boolean;
   id: string;
   type: 'game';
   attributes: {
@@ -175,6 +179,7 @@ export interface Game {
     game_hash: string;
     created_at: string;
     winnings_in_cents: number;
+    scratch_card_prize?: PrizeAttributes[]; // Lista de prêmios possíveis
   };
 }
 
@@ -201,54 +206,6 @@ export interface JsonApiCollection<T, I = any> {
 }
 
 export interface JsonApiSingular<T> {
+  included: never[];
   data: JsonApiData<T>;
-}
-
-// Define a estrutura de um prêmio
-interface PrizeAttributes {
-  id: number;
-  name: string;
-  value_in_cents: number;
-  image_url: string | null;
-}
-
-// Define a estrutura de um jogo
-interface GameAttributes {
-  id: number;
-  status: 'pending' | 'finished'; // Adicione outros status se existirem
-  game_hash: string;
-  created_at: string;
-  winnings_in_cents: number;
-}
-
-// Define a estrutura de um identificador de recurso (padrão JSON:API)
-interface ResourceIdentifier {
-  id: string;
-  type: string;
-}
-
-// Define o objeto principal da resposta da API, que agora será exportado
-export interface JsonApiResponse {
-  data: {
-    // O recurso principal
-    data: {
-      id: string;
-      type: 'game';
-      attributes: GameAttributes;
-      relationships: {
-        prize: {
-          data: ResourceIdentifier;
-        };
-        scratch_card: {
-          data: ResourceIdentifier;
-        };
-      };
-    };
-    // Dados relacionados que vêm junto na requisição
-    included?: Array<{
-      id: string;
-      type: string;
-      attributes: PrizeAttributes | any; // Usamos 'any' para cobrir outros tipos de 'included'
-    }>;
-  };
 }

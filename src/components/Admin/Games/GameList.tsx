@@ -38,17 +38,15 @@ const GameList: React.FC = () => {
       });
   }, []);
 
-  if (loading) return <p>Carregando jogos...</p>;
+  if (loading) return <p className="text-gray-500">Carregando jogos...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h1 className="text-2xl font-bold mb-4">Gerenciamento de Jogos</h1>
+    <div className="bg-white rounded-lg shadow">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usuário</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Raspadinha</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prêmio</th>
@@ -58,15 +56,22 @@ const GameList: React.FC = () => {
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {games.map((game) => (
-              <tr key={game.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{game.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{game.user.full_name || 'N/A'}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{game.scratch_card.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{game.prize.name}</td>
-                <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${game.winnings_in_cents > 0 ? 'text-green-600' : ''}`}>
+              <tr key={game.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                  {game.user.full_name || 'N/A'}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {game.scratch_card.name}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {game.prize.name}
+                </td>
+                <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${game.winnings_in_cents > 0 ? 'text-green-600' : 'text-gray-800'}`}>
                   R$ {(game.winnings_in_cents / 100).toFixed(2)}
                 </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{new Date(game.created_at).toLocaleString('pt-BR')}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {new Date(game.created_at).toLocaleString('pt-BR')}
+                </td>
               </tr>
             ))}
           </tbody>

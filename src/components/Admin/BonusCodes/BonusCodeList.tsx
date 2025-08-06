@@ -27,7 +27,7 @@ const BonusCodeList: React.FC = () => {
   const handleSave = () => {
     setIsModalOpen(false);
     setSelectedCode(null);
-    fetchBonusCodes(); // Recarrega a lista
+    fetchBonusCodes();
   };
 
   const handleEdit = (code: AdminBonusCode) => {
@@ -40,15 +40,14 @@ const BonusCodeList: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  if (loading) return <p>Carregando...</p>;
+  if (loading) return <p className="text-gray-500">Carregando...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Gerenciamento de Códigos de Bônus</h1>
-        <button onClick={handleAddNew} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
-          Adicionar Novo
+      <div className="flex justify-end items-center mb-4">
+        <button onClick={handleAddNew} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">
+          Adicionar Novo Código
         </button>
       </div>
       
@@ -56,26 +55,32 @@ const BonusCodeList: React.FC = () => {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Código</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bônus</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usos</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Ações</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Código</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bônus</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Usos</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Expira em</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
             {bonusCodes.map(code => (
-              <tr key={code.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold">{code.code}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{(code.bonus_percentage * 100).toFixed(0)}%</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{code.uses_count} / {code.max_uses === -1 ? '∞' : code.max_uses}</td>
+              <tr key={code.id} className="hover:bg-gray-50">
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-gray-900">{code.code}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{(code.bonus_percentage * 100).toFixed(0)}%</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{code.uses_count} / {code.max_uses === -1 ? 'Ilimitado' : code.max_uses}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {code.expires_at ? new Date(code.expires_at).toLocaleDateString('pt-BR') : 'Nunca'}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${code.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                     {code.is_active ? 'Ativo' : 'Inativo'}
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                  <button onClick={() => handleEdit(code)} className="text-indigo-600 hover:text-indigo-900">Editar</button>
+                  <button onClick={() => handleEdit(code)} className="text-indigo-600 hover:text-indigo-900">
+                    Editar
+                  </button>
                 </td>
               </tr>
             ))}

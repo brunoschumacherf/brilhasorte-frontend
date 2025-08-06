@@ -1,7 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+import { useForm, useFieldArray, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import Modal from '../../Shared/Modal';
 import type { AdminScratchCard, AdminPrize } from '../../../types';
 import { createAdminScratchCard, updateAdminScratchCard } from '../../../services/api';
+import { toast } from 'react-toastify';
+
+// Esquema de validação para um prêmio individual
+const prizeSchema = z.object({
+  id: z.number().optional(),
+  name: z.string().min(1, "Nome é obrigatório"),
+  value_in_cents: z.preprocess(val => Number(String(val).replace(/[^0-9]/g, '')), z.number().min(0, "Valor deve ser >= 0")),
+  probability: z.preprocess(val => Number(val), z.number().min(0, "Prob. deve ser >= 0").max(1, "Prob. deve ser <= 1")),
+  stock: z.preprocess(val => Number(val), z.number().int("Estoque deve ser um número inteiro")),
+  image_url: z.string().url("Deve ser uma URL válida").optional().or(z.literal('')),
+  _destroy: z.boolean().optional(),
+});
+
+// Esquema de validação para a raspadinha, com a validação customizada da soma
+const scratchCardSchema = z.object({
+  name: z.string().min(3, "O nome é obrigatório"),
+  price_in_cents: z.preprocess(val => Number(String(val).replace(/[^0-9]/g, '')), z.number().min(0, "O preço deve ser >= 0")),
+  description: z.string().optional(),
+  image_url: z.string().url("Deve ser uma URL válida").optional().or(z.literal('')),
+  is_active: z.boolean(),
+  prizes: z.array(prizeSchema).min(1, "É necessário pelo menos um prêmio."),
+}).refine(data => {
+  const totalProbability = data.prizes
+    .filter(p => !p._destroy)
+    .reduce((sum, prize) => sum + Number(prize.probability || 0), 0);
+  return Math.abs(totalProbability - 1.0) < 0.0001;
+}, {
+  message: "A soma das probabilidades de todos os prêmios deve ser exatamente 1.0 (100%)",
+  path: ["prizes"],
+});
+
+type ScratchCardFormData = z.infer<typeof scratchCardSchema>;
 
 interface ScratchCardFormProps {
   isOpen: boolean;
@@ -11,70 +46,37 @@ interface ScratchCardFormProps {
 }
 
 const ScratchCardForm: React.FC<ScratchCardFormProps> = ({ isOpen, onClose, onSave, existingScratchCard }) => {
-  const [formData, setFormData] = useState<Omit<AdminScratchCard, 'id'>>({
-    name: '', price_in_cents: 0, description: '', image_url: '', is_active: true, prizes: []
+  const { register, control, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ScratchCardFormData>({
+    resolver: zodResolver(scratchCardSchema),
+    defaultValues: {
+      name: '', price_in_cents: 0, description: '', image_url: '', is_active: true, prizes: []
+    }
   });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+
+  const { fields, append, remove, update } = useFieldArray({ control, name: "prizes" });
+  
+  const prizesWatcher = useWatch({ control, name: 'prizes' });
+  const totalProbability = (prizesWatcher || [])
+    .filter(p => !p._destroy)
+    .reduce((sum, prize) => sum + Number(prize.probability || 0), 0);
 
   useEffect(() => {
-    if (existingScratchCard) {
-      setFormData({
-        name: existingScratchCard.name,
-        price_in_cents: existingScratchCard.price_in_cents,
-        description: existingScratchCard.description || '',
-        image_url: existingScratchCard.image_url || '',
-        is_active: existingScratchCard.is_active,
-        prizes: existingScratchCard.prizes.map(p => ({...p, image_url: p.image_url || ''})) || [],
-      });
-    } else {
-      setFormData({ name: '', price_in_cents: 0, description: '', image_url: '', is_active: true, prizes: [] });
+    if (isOpen) {
+      if (existingScratchCard) {
+        reset({
+          ...existingScratchCard,
+          description: existingScratchCard.description || '',
+          image_url: existingScratchCard.image_url || '',
+          prizes: existingScratchCard.prizes || [],
+        });
+      } else {
+        reset({ name: '', price_in_cents: 0, description: '', image_url: '', is_active: true, prizes: [] });
+      }
     }
-  }, [existingScratchCard, isOpen]);
+  }, [existingScratchCard, isOpen, reset]);
 
-  const handleMainChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
-    if (type === 'checkbox') {
-      setFormData({ ...formData, [name]: (e.target as HTMLInputElement).checked });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-  };
-
-  const handlePrizeChange = (index: number, field: keyof AdminPrize, value: any) => {
-    const newPrizes = [...formData.prizes];
-    (newPrizes[index] as any)[field] = value;
-    setFormData({ ...formData, prizes: newPrizes });
-  };
-
-  const addPrize = () => {
-    setFormData({ ...formData, prizes: [...formData.prizes, { name: '', value_in_cents: 0, probability: 0, stock: -1, image_url: '' }] });
-  };
-  
-  const removePrize = (index: number) => {
-    const prize = formData.prizes[index];
-    if (prize.id) {
-      handlePrizeChange(index, '_destroy', true);
-    } else {
-      setFormData({ ...formData, prizes: formData.prizes.filter((_, i) => i !== index) });
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
-    
-    const payload = {
-      ...formData,
-      price_in_cents: Number(formData.price_in_cents),
-      prizes_attributes: formData.prizes.map(p => ({
-        ...p,
-        value_in_cents: Number(p.value_in_cents),
-        probability: Number(p.probability),
-        stock: Number(p.stock),
-      })),
-    };
+  const onSubmit = async (data: ScratchCardFormData) => {
+    const payload = { ...data, prizes_attributes: data.prizes };
     // @ts-ignore
     delete payload.prizes;
 
@@ -82,83 +84,97 @@ const ScratchCardForm: React.FC<ScratchCardFormProps> = ({ isOpen, onClose, onSa
       const response = existingScratchCard
         ? await updateAdminScratchCard(existingScratchCard.id, payload)
         : await createAdminScratchCard(payload);
+      toast.success(`Raspadinha ${existingScratchCard ? 'atualizada' : 'criada'} com sucesso!`);
       onSave(response.data.data.attributes);
     } catch (err: any) {
-      setError(err.response?.data?.errors?.join(', ') || 'Ocorreu um erro.');
-    } finally {
-      setLoading(false);
+      toast.error(err.response?.data?.errors?.join(', ') || 'Ocorreu um erro.');
     }
   };
-
-  const PrizeInput: React.FC<{label: string, name: keyof AdminPrize, index: number, value: any, type?: string, step?: string}> = 
-  ({label, name, index, value, type = 'text', step}) => (
-    <div>
-      <label htmlFor={`${name}-${index}`} className="block text-xs font-medium text-gray-600">{label}</label>
-      <input
-        id={`${name}-${index}`}
-        type={type}
-        step={step}
-        placeholder={label}
-        value={value}
-        onChange={e => handlePrizeChange(index, name, e.target.value)}
-        className="mt-1 w-full border rounded-md p-2 text-sm"
-      />
-    </div>
-  );
+  
+  const inputClasses = "mt-1 w-full p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-900 focus:ring-blue-500 focus:border-blue-500";
+  const FieldError: React.FC<{ message?: string }> = ({ message }) => message ? <p className="text-red-500 text-xs mt-1">{message}</p> : null;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={existingScratchCard ? 'Editar Raspadinha' : 'Nova Raspadinha'}>
-      <form onSubmit={handleSubmit} className="space-y-4 max-h-[70vh] overflow-y-auto p-1">
-        {error && <p className="bg-red-100 text-red-700 p-3 rounded">{error}</p>}
-        
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-h-[80vh] overflow-y-auto p-1">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nome da Raspadinha</label>
-          <input type="text" name="name" id="name" value={formData.name} onChange={handleMainChange} required className="mt-1 w-full border rounded-md p-2" />
+          <label className="block text-sm font-medium text-gray-700">Nome da Raspadinha</label>
+          <input {...register("name")} className={inputClasses} />
+          <FieldError message={errors.name?.message} />
         </div>
         <div>
-          <label htmlFor="price_in_cents" className="block text-sm font-medium text-gray-700">Preço (em centavos)</label>
-          <input type="number" id="price_in_cents" name="price_in_cents" value={formData.price_in_cents} onChange={handleMainChange} required className="mt-1 w-full border rounded-md p-2" />
-        </div>
-        {/* CAMPO ADICIONADO AQUI */}
-        <div>
-          <label htmlFor="image_url" className="block text-sm font-medium text-gray-700">URL da Imagem da Raspadinha (opcional)</label>
-          <input type="text" id="image_url" name="image_url" value={formData.image_url || ''} onChange={handleMainChange} className="mt-1 w-full border rounded-md p-2" />
+          <label className="block text-sm font-medium text-gray-700">Preço (em centavos)</label>
+          <input {...register("price_in_cents")} type="number" className={inputClasses} />
+          <FieldError message={errors.price_in_cents?.message} />
         </div>
         <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descrição</label>
-          <textarea id="description" name="description" value={formData.description || ''} onChange={handleMainChange} className="mt-1 w-full border rounded-md p-2" />
+          <label className="block text-sm font-medium text-gray-700">URL da Imagem</label>
+          <input {...register("image_url")} className={inputClasses} />
+          <FieldError message={errors.image_url?.message} />
         </div>
         <div className="flex items-center">
-          <input type="checkbox" id="is_active" name="is_active" checked={formData.is_active} onChange={handleMainChange} className="h-4 w-4 rounded" />
-          <label htmlFor="is_active" className="ml-2 block text-sm font-medium text-gray-700">Ativa</label>
+          <input {...register("is_active")} type="checkbox" className="h-4 w-4 rounded border-gray-300" />
+          <label className="ml-2 block text-sm text-gray-900">Ativa</label>
         </div>
         
         <hr className="my-4"/>
-        <h4 className="text-lg font-medium">Prêmios</h4>
+        <div className="flex justify-between items-center">
+          <h4 className="text-lg font-medium text-gray-900">Prêmios</h4>
+          <div className={`text-sm font-semibold px-2 py-1 rounded ${Math.abs(totalProbability - 1.0) < 0.0001 ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'}`}>
+            Soma: {(totalProbability * 100).toFixed(1)}%
+          </div>
+        </div>
+        <FieldError message={errors.prizes?.message || errors.prizes?.root?.message} />
         
         <div className="space-y-4">
-          {formData.prizes.filter(p => !p._destroy).map((prize, index) => (
-            <div key={index} className="p-4 border rounded-lg bg-gray-50 relative">
-              <button type="button" onClick={() => removePrize(index)} className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-xl">&times;</button>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <PrizeInput label="Nome do Prêmio" name="name" index={index} value={prize.name} />
-                <PrizeInput label="Valor (centavos)" name="value_in_cents" index={index} value={prize.value_in_cents} type="number"/>
-                <PrizeInput label="Probabilidade (0.0 a 1.0)" name="probability" index={index} value={prize.probability} type="number" step="0.001"/>
-                <PrizeInput label="Estoque (-1 para infinito)" name="stock" index={index} value={prize.stock} type="number"/>
-                <div className="md:col-span-2">
-                  <PrizeInput label="URL da Imagem (opcional)" name="image_url" index={index} value={prize.image_url || ''}/>
+          {fields.map((field, index) => {
+            if (field._destroy) return null;
+            
+            return (
+              <div key={field.id} className="p-4 border rounded-lg bg-gray-50 relative">
+                <button 
+                  type="button" 
+                  onClick={() => field.id ? update(index, { ...field, _destroy: true }) : remove(index)}
+                  className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-xl"
+                >&times;</button>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs font-medium text-gray-600">Nome do Prêmio</label>
+                    <input {...register(`prizes.${index}.name`)} className={inputClasses} />
+                    <FieldError message={errors.prizes?.[index]?.name?.message} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600">Valor (centavos)</label>
+                    <input {...register(`prizes.${index}.value_in_cents`)} type="number" className={inputClasses} />
+                    <FieldError message={errors.prizes?.[index]?.value_in_cents?.message} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600">Probabilidade (0.0 a 1.0)</label>
+                    <input {...register(`prizes.${index}.probability`)} type="number" step="0.001" className={inputClasses} />
+                    <FieldError message={errors.prizes?.[index]?.probability?.message} />
+                  </div>
+                  <div>
+                    <label className="text-xs font-medium text-gray-600">Estoque (-1 para infinito)</label>
+                    <input {...register(`prizes.${index}.stock`)} type="number" className={inputClasses} />
+                    <FieldError message={errors.prizes?.[index]?.stock?.message} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-xs font-medium text-gray-600">URL da Imagem</label>
+                    <input {...register(`prizes.${index}.image_url`)} className={inputClasses} />
+                    <FieldError message={errors.prizes?.[index]?.image_url?.message} />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        <button type="button" onClick={addPrize} className="mt-2 text-sm font-semibold text-blue-600 hover:text-blue-800">+ Adicionar Prêmio</button>
+        <button type="button" onClick={() => append({ name: '', value_in_cents: 0, probability: 0, stock: -1, image_url: '' })} className="mt-2 text-sm font-semibold text-blue-600 hover:text-blue-800">+ Adicionar Prêmio</button>
         
         <div className="flex justify-end space-x-3 pt-4 border-t mt-4">
           <button type="button" onClick={onClose} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancelar</button>
-          <button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg disabled:bg-gray-400">
-            {loading ? 'Salvando...' : 'Salvar'}
+          <button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg disabled:bg-gray-400">
+            {isSubmitting ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </form>
