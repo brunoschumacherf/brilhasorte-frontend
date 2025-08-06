@@ -17,7 +17,8 @@ import type {
   AdminDepositListItem,
   AdminWithdrawalListItem,
   AdminGameListItem,
-  AdminBonusCode
+  AdminBonusCode,
+  AdminScratchCard
 } from '../types';
 
 const api = axios.create({
@@ -100,5 +101,13 @@ export const createAdminBonusCode = (data: Partial<AdminBonusCode>) =>
   api.post<JsonApiSingular<AdminBonusCode>>('/api/v1/admin/bonus_codes', { bonus_code: data });
 export const updateAdminBonusCode = (id: number, data: Partial<AdminBonusCode>) => 
   api.put<JsonApiSingular<AdminBonusCode>>(`/api/v1/admin/bonus_codes/${id}`, { bonus_code: data });
+
+
+export const getAdminScratchCardList = () => api.get<JsonApiCollection<AdminScratchCard>>('/api/v1/admin/scratch_cards');
+export const createAdminScratchCard = (data: any) => 
+  api.post<JsonApiSingular<AdminScratchCard>>('/api/v1/admin/scratch_cards', { scratch_card: data });
+export const updateAdminScratchCard = (id: number, data: any) => 
+  api.patch<JsonApiSingular<AdminScratchCard>>(`/api/v1/admin/scratch_cards/${id}`, { scratch_card: data });
+
 
 export default api;

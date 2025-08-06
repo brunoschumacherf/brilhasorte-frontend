@@ -19,6 +19,7 @@ const AdminLayout: React.FC = () => {
             <li className="mt-2"><NavLink to="/admin/deposits" className={navLinkClasses}>Depósitos</NavLink></li>
             <li className="mt-2"><NavLink to="/admin/withdrawals" className={navLinkClasses}>Saques</NavLink></li>
             <li className="mt-2"><NavLink to="/admin/bonus-codes" className={navLinkClasses}>Códigos de Bônus</NavLink></li>
+            <li className="mt-2"><NavLink to="/admin/scratch-cards" className={navLinkClasses}>Raspadinhas</NavLink></li>
           </ul>
         </nav>
       </aside>

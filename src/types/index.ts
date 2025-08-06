@@ -79,6 +79,26 @@ export interface AdminBonusCode {
   created_at: string;
 }
 
+export interface AdminPrize {
+  id?: number;
+  name: string;
+  value_in_cents: number;
+  probability: number;
+  stock: number;
+  image_url?: string | null;
+  _destroy?: boolean;
+}
+
+export interface AdminScratchCard {
+  id: number;
+  name: string;
+  price_in_cents: number;
+  description: string | null;
+  image_url: string | null;
+  is_active: boolean;
+  prizes: AdminPrize[];
+}
+
 export interface ScratchCard {
   id: string;
   type: 'scratch_card';
