@@ -20,7 +20,8 @@ import ReferralsPage from './pages/ReferralsPage';
 import DashboardPage from './pages/Admin/DashboardPage';
 import UsersPage from './pages/Admin/UsersPage';
 import DepositsPage from './pages/Admin/DepositsPage';
-import WithdrawalsPage from './pages/Admin/WithdrawalsPage'; // Importar nova página
+import WithdrawalsPage from './pages/Admin/WithdrawalsPage';
+import AdminGamesPage from './pages/Admin/GamesPage'; // Importar nova página
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -32,21 +33,17 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        {/* Lógica para não mostrar Navbar nas rotas de admin */}
         <Routes>
           <Route path="/admin/*" element={null} />
           <Route path="*" element={<Navbar />} />
         </Routes>
         
-        {/* Container principal das rotas */}
         <Routes>
-          {/* Rotas Públicas */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-          {/* Rotas Privadas de Usuário com layout padrão */}
           <Route path="/games" element={<PrivateRoute><div className="container mx-auto p-6"><GamesPage /></div></PrivateRoute>} />
           <Route path="/games/:gameId" element={<PrivateRoute><div className="container mx-auto p-6"><GameRevealPage /></div></PrivateRoute>} />
           <Route path="/profile" element={<PrivateRoute><div className="container mx-auto p-6"><ProfilePage /></div></PrivateRoute>} />
@@ -54,15 +51,14 @@ function App() {
           <Route path="/rankings" element={<PrivateRoute><div className="container mx-auto p-6"><RankingsPage /></div></PrivateRoute>} />
           <Route path="/referrals" element={<PrivateRoute><div className="container mx-auto p-6"><ReferralsPage /></div></PrivateRoute>} />
 
-          {/* Rotas Privadas de Admin (agrupadas sob o AdminLayout) */}
           <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="deposits" element={<DepositsPage />} />
             <Route path="withdrawals" element={<WithdrawalsPage />} />
+            <Route path="games" element={<AdminGamesPage />} />
           </Route>
 
-          {/* Redirecionamento Padrão */}
           <Route path="*" element={<Navigate to="/games" />} />
         </Routes>
       </Router>

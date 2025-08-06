@@ -49,6 +49,26 @@ export interface AdminWithdrawalListItem {
   };
 }
 
+export interface AdminGameListItem {
+  id: number;
+  status: 'pending' | 'finished';
+  winnings_in_cents: number;
+  created_at: string;
+  user: {
+    id: number;
+    full_name: string | null;
+  };
+  prize: {
+    id: number;
+    name: string;
+  };
+  scratch_card: {
+    id: number;
+    name: string;
+  };
+}
+
+
 export interface ScratchCard {
   id: string;
   type: 'scratch_card';

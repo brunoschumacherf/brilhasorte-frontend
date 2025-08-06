@@ -15,7 +15,8 @@ import type {
   Game,
   AdminUserListItem,
   AdminDepositListItem,
-  AdminWithdrawalListItem
+  AdminWithdrawalListItem,
+  AdminGameListItem
 } from '../types';
 
 const api = axios.create({
@@ -90,6 +91,8 @@ export const getAdminUserList = () => api.get<JsonApiCollection<AdminUserListIte
 export const getAdminDepositList = () => api.get<JsonApiCollection<AdminDepositListItem>>('/api/v1/admin/deposits');
 
 export const getAdminWithdrawalList = () => api.get<JsonApiCollection<AdminWithdrawalListItem>>('/api/v1/admin/withdrawals');
+
+export const getAdminGameList = () => api.get<JsonApiCollection<AdminGameListItem>>('/api/v1/admin/games');
 
 
 export default api;
