@@ -1,11 +1,13 @@
 import React, { type ReactNode } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-import Navbar from './components/Layout/Navbar';
+import UserLayout from './components/Layout/UserLayout';
 import AdminLayout from './components/Admin/AdminLayout';
 import AdminRoute from './components/Admin/AdminRoute';
-// Páginas de Usuário e Admin
+// Páginas
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
@@ -22,11 +24,11 @@ import DepositsPage from './pages/Admin/DepositsPage';
 import WithdrawalsPage from './pages/Admin/WithdrawalsPage';
 import AdminGamesPage from './pages/Admin/GamesPage';
 import BonusCodesPage from './pages/Admin/BonusCodesPage';
-import ScratchCardsPage from './pages/Admin/ScratchCardsPage'; // Importar nova página
+import ScratchCardsPage from './pages/Admin/ScratchCardsPage';
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
-  if (loading) return <p className="text-center mt-8">Carregando...</p>;
+  if (loading) return <div className="flex justify-center items-center h-screen bg-[var(--background-dark)]"><p>Carregando...</p></div>;
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 };
 
@@ -34,22 +36,40 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <ToastContainer
+          position="top-right"
+          autoClose={5000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="dark"
+        />
+        
         <Routes>
-          <Route path="/admin/*" element={null} />
-          <Route path="*" element={<Navbar />} />
-        </Routes>
-        <Routes>
+          {/* Rotas Públicas (sem layout de Navbar) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-          <Route path="/games" element={<PrivateRoute><div className="container mx-auto p-6"><GamesPage /></div></PrivateRoute>} />
-          <Route path="/games/:gameId" element={<PrivateRoute><div className="container mx-auto p-6"><GameRevealPage /></div></PrivateRoute>} />
-          <Route path="/profile" element={<PrivateRoute><div className="container mx-auto p-6"><ProfilePage /></div></PrivateRoute>} />
-          <Route path="/history" element={<PrivateRoute><div className="container mx-auto p-6"><HistoryPage /></div></PrivateRoute>} />
-          <Route path="/rankings" element={<PrivateRoute><div className="container mx-auto p-6"><RankingsPage /></div></PrivateRoute>} />
-          <Route path="/referrals" element={<PrivateRoute><div className="container mx-auto p-6"><ReferralsPage /></div></PrivateRoute>} />
+
+          {/* Rotas Privadas de Usuário (agrupadas sob o UserLayout) */}
+          <Route path="/" element={<PrivateRoute><UserLayout /></PrivateRoute>}>
+            <Route index element={<Navigate to="/games" />} /> {/* Redireciona a raiz para /games */}
+            <Route path="games" element={<GamesPage />} />
+            <Route path="games/:gameId" element={<GameRevealPage />} />
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="history" element={<HistoryPage />} />
+            <Route path="rankings" element={<RankingsPage />} />
+            <Route path="referrals" element={<ReferralsPage />} />
+          </Route>
+
+          {/* Rotas Privadas de Admin (agrupadas sob o AdminLayout) */}
           <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+            <Route index element={<Navigate to="/admin/dashboard" />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="users" element={<UsersPage />} />
             <Route path="deposits" element={<DepositsPage />} />
@@ -58,6 +78,8 @@ function App() {
             <Route path="bonus-codes" element={<BonusCodesPage />} />
             <Route path="scratch-cards" element={<ScratchCardsPage />} />
           </Route>
+
+          {/* Qualquer outra rota redireciona para o login se não estiver logado, ou para games se estiver */}
           <Route path="*" element={<Navigate to="/games" />} />
         </Routes>
       </Router>

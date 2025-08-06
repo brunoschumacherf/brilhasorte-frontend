@@ -1,0 +1,37 @@
+/* Importando uma fonte moderna do Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
+:root {
+  --background-dark: #121212;
+  --surface-dark: #1E1E1E;
+  --primary-gold: #FFD700;
+  --text-primary: #FFFFFF;
+  --text-secondary: #AAAAAA;
+  --border-color: #333333;
+}
+
+body {
+  background-color: var(--background-dark);
+  color: var(--text-primary);
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Estilização da barra de rolagem para um visual mais integrado */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--background-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+
+.scratchcard-container {
+  touch-action: none;
+}

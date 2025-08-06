@@ -10,9 +10,11 @@ const ScratchCardList: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Filtra para não mostrar a raspadinha de preço 0 (o jogo grátis)
     getScratchCards()
       .then(response => {
-        setScratchCards(response.data.data);
+        const paidCards = response.data.data.filter(card => card.attributes.price_in_cents > 0);
+        setScratchCards(paidCards);
       })
       .catch(() => {
         setError('Não foi possível carregar as raspadinhas.');
@@ -33,50 +35,45 @@ const ScratchCardList: React.FC = () => {
   };
 
   if (loading) {
-    return <p className="text-center mt-8 text-lg text-gray-600">Carregando raspadinhas...</p>;
+    return <p className="text-center mt-8 text-lg text-[var(--text-secondary)]">Carregando raspadinhas...</p>;
   }
 
   if (error) {
-    return <p className="bg-red-100 text-red-700 p-4 rounded-md text-center mt-8">{error}</p>;
+    return <p className="bg-red-900 bg-opacity-30 text-red-300 p-4 rounded-md text-center mt-8">{error}</p>;
   }
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      <h2 className="text-3xl font-bold mb-8 text-gray-800 text-center">Escolha sua Sorte</h2>
+    <div>
+      <h2 className="text-3xl font-bold mb-6 text-center text-[var(--text-primary)]">Raspadinhas</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {scratchCards.map(card => (
           <div 
             key={card.id} 
-            className="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-transform duration-300 ease-in-out flex flex-col"
+            className="group bg-[var(--surface-dark)] border border-[var(--border-color)] rounded-xl overflow-hidden transition-all duration-300 ease-in-out hover:border-[var(--primary-gold)] hover:shadow-2xl hover:shadow-yellow-500/10"
           >
-            {/* Seção da Imagem */}
-            <div className="h-48 bg-gray-200 flex items-center justify-center">
+            <div className="h-48 bg-black flex items-center justify-center overflow-hidden">
               {card.attributes.image_url ? (
                 <img 
                   src={card.attributes.image_url} 
                   alt={card.attributes.name} 
-                  className="w-full h-full object-cover" 
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
                 />
               ) : (
-                <span className="text-gray-500">Sem Imagem</span>
+                <span className="text-[var(--text-secondary)]">Sem Imagem</span>
               )}
             </div>
-
-            {/* Seção de Conteúdo */}
-            <div className="p-6 text-center flex flex-col flex-grow">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">{card.attributes.name}</h3>
-              <p className="text-gray-700 text-xl font-semibold mb-6">
+            
+            <div className="p-5 text-center">
+              <h3 className="text-xl font-bold text-[var(--text-primary)] mb-1 truncate">{card.attributes.name}</h3>
+              <p className="text-[var(--primary-gold)] text-2xl font-semibold mb-5">
                 R$ {(card.attributes.price_in_cents / 100).toFixed(2)}
               </p>
-              {/* Botão empurrado para o final */}
-              <div className="mt-auto">
-                <button
-                  onClick={() => handleBuyCard(card.id)}
-                  className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-300 shadow-md hover:shadow-lg"
-                >
-                  Comprar e Jogar
-                </button>
-              </div>
+              <button
+                onClick={() => handleBuyCard(card.id)}
+                className="w-full bg-[var(--primary-gold)] text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-yellow-500/20 hover:bg-yellow-300"
+              >
+                Jogar Agora
+              </button>
             </div>
           </div>
         ))}

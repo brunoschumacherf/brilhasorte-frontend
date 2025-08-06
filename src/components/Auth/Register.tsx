@@ -1,62 +1,94 @@
 import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import FormField from '../Layout/FormField';
+import { toast } from 'react-toastify';
+
+// 1. Definir o esquema de validação com Zod
+const registerSchema = z.object({
+  full_name: z.string().min(3, "O nome completo é obrigatório"),
+  email: z.string().email("Formato de e-mail inválido"),
+  cpf: z.string().min(11, "O CPF deve ter no mínimo 11 dígitos"),
+  birth_date: z.string().refine((date) => new Date(date) < new Date(), "Data de nascimento inválida"),
+  phone_number: z.string().min(10, "O telefone é obrigatório"),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  password_confirmation: z.string()
+}).refine(data => data.password === data.password_confirmation, {
+  message: "As senhas não conferem",
+  path: ["password_confirmation"], // Onde o erro deve aparecer
+});
+
+type RegisterFormData = z.infer<typeof registerSchema>;
+
+// Componente para exibir erros de um campo específico
+const FieldError: React.FC<{ message?: string }> = ({ message }) => {
+  if (!message) return null;
+  return <p className="text-red-400 text-xs mt-1">{message}</p>;
+};
 
 const Register: React.FC = () => {
-  const [formData, setFormData] = useState({
-    full_name: '',
-    email: '',
-    cpf: '',
-    birth_date: '',
-    phone_number: '',
-    password: '',
-    password_confirmation: '',
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { register } = useAuth();
+  const { register: registerUser } = useAuth();
   const navigate = useNavigate();
+  
+  // 2. Integrar com react-hook-form
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema)
+  });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (formData.password !== formData.password_confirmation) {
-      setError('As senhas não conferem.');
-      return;
-    }
-    setLoading(true);
+  const onSubmit = async (data: RegisterFormData) => {
     try {
-      await register(formData);
+      await registerUser(data);
+      toast.success("Cadastro realizado com sucesso!");
       navigate('/games');
     } catch (err: any) {
       const apiError = err.response?.data?.status?.message || "Falha no registro. Verifique os dados e tente novamente.";
-      setError(apiError);
-    } finally {
-      setLoading(false);
+      toast.error(apiError);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-full max-w-lg">
-        <h2 className="text-2xl font-bold mb-6 text-center text-gray-800">Crie sua Conta</h2>
-        {error && <p className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center">{error}</p>}
+    <div className="flex items-center justify-center min-h-screen bg-[var(--background-dark)]">
+      <form onSubmit={handleSubmit(onSubmit)} className="bg-[var(--surface-dark)] border border-[var(--border-color)] p-8 rounded-lg shadow-lg w-full max-w-lg">
+        <h2 className="text-3xl font-bold mb-6 text-center text-[var(--primary-gold)]">Crie sua Conta</h2>
         
-        <FormField label="Nome Completo" type="text" name="full_name" value={formData.full_name} onChange={handleChange} required />
-        <FormField label="Email" type="email" name="email" value={formData.email} onChange={handleChange} required />
-        <FormField label="CPF" type="text" name="cpf" value={formData.cpf} onChange={handleChange} required />
-        <FormField label="Data de Nascimento" type="date" name="birth_date" value={formData.birth_date} onChange={handleChange} required />
-        <FormField label="Telefone" type="tel" name="phone_number" value={formData.phone_number} onChange={handleChange} required />
-        <FormField label="Senha" type="password" name="password" value={formData.password} onChange={handleChange} required />
-        <FormField label="Confirmação da Senha" type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} required />
+        {/* 3. Mapear os campos para o react-hook-form */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <input {...register("full_name")} placeholder="Nome Completo" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
+            <FieldError message={errors.full_name?.message} />
+          </div>
+          <div>
+            <input {...register("email")} placeholder="Email" type="email" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
+            <FieldError message={errors.email?.message} />
+          </div>
+          <div>
+            <input {...register("cpf")} placeholder="CPF" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
+            <FieldError message={errors.cpf?.message} />
+          </div>
+          <div>
+            <input {...register("birth_date")} type="date" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
+            <FieldError message={errors.birth_date?.message} />
+          </div>
+          <div>
+            <input {...register("phone_number")} placeholder="Telefone" type="tel" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
+            <FieldError message={errors.phone_number?.message} />
+          </div>
+        </div>
         
-        <button type="submit" disabled={loading} className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400">
-          {loading ? 'Cadastrando...' : 'Cadastrar'}
+        <div className="mt-4">
+          <input {...register("password")} placeholder="Senha (mínimo 6 caracteres)" type="password" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
+          <FieldError message={errors.password?.message} />
+        </div>
+        
+        <div className="mt-4">
+          <input {...register("password_confirmation")} placeholder="Confirme a Senha" type="password" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
+          <FieldError message={errors.password_confirmation?.message} />
+        </div>
+        
+        <button type="submit" disabled={isSubmitting} className="mt-6 w-full bg-[var(--primary-gold)] text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-yellow-500/20 hover:bg-yellow-300 disabled:bg-gray-500 disabled:shadow-none">
+          {isSubmitting ? 'Cadastrando...' : 'Finalizar Cadastro'}
         </button>
       </form>
     </div>

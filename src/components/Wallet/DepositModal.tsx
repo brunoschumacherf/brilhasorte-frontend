@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Modal from '../Shared/Modal';
 import { createDeposit } from '../../services/api';
 import type { DepositResponse } from '../../types';
+import { toast } from 'react-toastify'; // Importar a função toast
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -11,7 +12,6 @@ interface DepositModalProps {
 const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [depositData, setDepositData] = useState<DepositResponse | null>(null);
 
   const handleDeposit = async (e: React.FormEvent) => {
@@ -19,17 +19,17 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
     const amountInCents = Math.round(parseFloat(amount) * 100);
 
     if (isNaN(amountInCents) || amountInCents <= 0) {
-      setError('Por favor, insira um valor válido.');
+      toast.error('Por favor, insira um valor válido.');
       return;
     }
 
     setLoading(true);
-    setError('');
     try {
       const response = await createDeposit(amountInCents);
       setDepositData(response.data.data.attributes);
+      toast.success('PIX gerado com sucesso!');
     } catch (err: any) {
-      setError(err.response?.data?.error || "Ocorreu um erro ao gerar o PIX.");
+      toast.error(err.response?.data?.error || "Ocorreu um erro ao gerar o PIX.");
     } finally {
       setLoading(false);
     }
@@ -37,7 +37,6 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
 
   const resetAndClose = () => {
     setAmount('');
-    setError('');
     setDepositData(null);
     onClose();
   };
@@ -45,14 +44,13 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
   const copyToClipboard = () => {
     if (depositData) {
       navigator.clipboard.writeText(depositData.pix_qr_code_payload);
-      alert('Código PIX Copiado!');
+      toast.info('Código PIX Copiado para a área de transferência!'); // Substitui o alert()
     }
   };
 
   return (
     <Modal isOpen={isOpen} onClose={resetAndClose} title={depositData ? "Pagar com PIX" : "Fazer um Depósito"}>
       {!depositData ? (
-        // Passo 1: Formulário para inserir o valor
         <form onSubmit={handleDeposit}>
           <div className="mb-4">
             <label htmlFor="amount" className="block text-gray-700 text-sm font-bold mb-2">
@@ -70,7 +68,6 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
               required
             />
           </div>
-          {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           <button
             type="submit"
             disabled={loading}
@@ -80,14 +77,12 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
           </button>
         </form>
       ) : (
-        // Passo 2: Mostrar o QR Code e o código
         <div className="text-center">
-          <p className="mb-4 text-gray-600">Escaneie o QR Code com o app do seu banco ou use o "Copia e Cola".</p>
+          <p className="mb-4 text-gray-600">Escaneie o QR Code ou use o "Copia e Cola".</p>
           <img 
             src={depositData.pix_qr_code_image_base64} 
             alt="PIX QR Code" 
             className="mx-auto my-4 border rounded-lg"
-            // A imagem base64 do backend é um placeholder, então vamos aumentar o tamanho dela
             style={{ width: '256px', height: '256px' }}
           />
           <div className="mb-4">

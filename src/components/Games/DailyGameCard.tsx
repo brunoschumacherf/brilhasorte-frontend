@@ -15,8 +15,8 @@ const DailyGameCard: React.FC = () => {
     try {
       const response = await playFreeDailyGame();
       const gameId = response.data.data.id;
-      setDailyGameClaimed(); // Atualiza o estado global
-      navigate(`/games/${gameId}`); // Redireciona para a revelação
+      setDailyGameClaimed();
+      navigate(`/games/${gameId}`);
     } catch (err: any) {
       setError(err.response?.data?.error || 'Não foi possível resgatar o jogo grátis.');
     } finally {
@@ -25,17 +25,17 @@ const DailyGameCard: React.FC = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-yellow-400 to-orange-500 p-6 rounded-lg shadow-lg text-white text-center">
-      <h3 className="text-2xl font-bold">Sua Chance Grátis Diária!</h3>
-      <p className="mt-2 mb-4">Resgate sua raspadinha grátis de hoje e concorra a prêmios!</p>
+    <div className="bg-gradient-to-r from-yellow-500 to-orange-500 p-8 rounded-lg shadow-lg text-center border-2 border-yellow-300">
+      <h2 className="text-3xl font-bold text-white drop-shadow-md">Sua Chance Grátis Diária!</h2>
+      <p className="mt-2 mb-6 text-yellow-100">Resgate sua raspadinha grátis de hoje e concorra a prêmios!</p>
       <button
         onClick={handleClaim}
         disabled={loading}
-        className="w-full bg-white text-yellow-500 font-bold py-3 px-4 rounded-lg transition-colors hover:bg-gray-100 disabled:bg-gray-300"
+        className="w-full max-w-xs mx-auto bg-white text-orange-600 font-bold py-3 px-4 rounded-lg transition-transform hover:scale-105 disabled:bg-gray-300 disabled:text-gray-500 disabled:scale-100"
       >
         {loading ? 'Resgatando...' : 'Resgatar Jogo Grátis'}
       </button>
-      {error && <p className="text-red-200 text-sm mt-2">{error}</p>}
+      {error && <p className="text-red-200 text-sm mt-4">{error}</p>}
     </div>
   );
 };

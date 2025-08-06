@@ -52,6 +52,7 @@ export const createGame = (scratchCardId: string) => api.post('/api/v1/games', {
 export const revealGame = (gameId: string) => api.post(`/api/v1/games/${gameId}/reveal`);
 // NOVA FUNÇÃO: Histórico de Jogos
 export const getGameHistory = () => api.get<JsonApiCollection<GameHistoryItem>>('/api/v1/games');
+export const getGameDetails = (gameId: string) => api.get<JsonApiSingular<Game>>(`/api/v1/games/${gameId}`); // NOVA FUNÇÃO
 
 
 // Depósito

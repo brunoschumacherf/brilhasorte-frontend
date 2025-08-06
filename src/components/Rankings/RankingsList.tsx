@@ -34,19 +34,27 @@ const RankingsList: React.FC = () => {
     { key: 'all_time', label: 'Geral' },
   ];
 
+  const getTrophyColor = (index: number) => {
+    if (index === 0) return 'text-yellow-400'; // Ouro
+    if (index === 1) return 'text-gray-400';  // Prata
+    if (index === 2) return 'text-yellow-600'; // Bronze
+    return 'text-[var(--text-secondary)]';
+  };
+
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md">
-      <h1 className="text-3xl font-bold mb-4 text-gray-800">Ranking de Ganhadores</h1>
+    <div className="bg-[var(--surface-dark)] border border-[var(--border-color)] p-6 rounded-lg shadow-lg">
+      <h1 className="text-3xl font-bold mb-2 text-center text-[var(--primary-gold)]">Hall da Fama</h1>
+      <p className="text-center text-[var(--text-secondary)] mb-6">Veja os jogadores com os maiores prêmios.</p>
       
-      <div className="flex justify-center space-x-2 mb-6 border-b pb-4">
+      <div className="flex justify-center space-x-2 mb-8">
         {periodLabels.map(({ key, label }) => (
           <button
             key={key}
             onClick={() => setPeriod(key)}
-            className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            className={`px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200 ${
               period === key
-                ? 'bg-yellow-500 text-white'
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                ? 'bg-[var(--primary-gold)] text-black shadow-md'
+                : 'bg-[#2a2a2a] text-[var(--text-secondary)] hover:bg-[#333]'
             }`}
           >
             {label}
@@ -54,25 +62,28 @@ const RankingsList: React.FC = () => {
         ))}
       </div>
 
-      {loading && <p className="text-center text-gray-500">Carregando...</p>}
-      {error && <p className="text-center text-red-500">{error}</p>}
+      {loading && <p className="text-center text-[var(--text-secondary)]">Carregando...</p>}
+      {error && <p className="text-center text-red-400">{error}</p>}
 
       {!loading && !error && (
         <ul className="space-y-3">
           {rankings.length > 0 ? (
             rankings.map((player, index) => (
-              <li key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50 hover:bg-gray-100">
+              <li key={index} className="flex items-center justify-between p-4 rounded-lg bg-[#2a2a2a] border border-transparent hover:border-[var(--primary-gold)] transition-colors">
                 <div className="flex items-center">
-                  <span className="text-lg font-bold text-gray-500 w-8">{index + 1}.</span>
-                  <span className="text-md font-semibold text-gray-800">{player.full_name}</span>
+                  <span className={`text-xl font-bold w-10 ${getTrophyColor(index)}`}>{index + 1}.</span>
+                  <span className="text-md font-medium text-[var(--text-primary)]">{player.full_name}</span>
                 </div>
-                <span className="text-lg font-bold text-green-600">
+                <span className="text-lg font-bold text-green-400">
                   R$ {(player.total_winnings / 100).toFixed(2)}
                 </span>
               </li>
             ))
           ) : (
-            <p className="text-center text-gray-500 py-4">Nenhum ranking disponível para este período.</p>
+            <div className="text-center text-[var(--text-secondary)] py-8">
+              <p>Nenhum ranking disponível para este período.</p>
+              <p className="text-sm">Jogue para aparecer aqui!</p>
+            </div>
           )}
         </ul>
       )}

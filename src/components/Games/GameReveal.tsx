@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { revealGame } from '../../services/api';
+import { getGameDetails, revealGame } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'react-toastify';
 
-// Definindo o tipo para os atributos do prêmio para clareza
 interface PrizeAttributes {
   id: number;
   name: string;
@@ -16,106 +16,134 @@ const GameReveal: React.FC = () => {
   const navigate = useNavigate();
   const { updateBalance, user } = useAuth();
 
+  const [isLoading, setIsLoading] = useState(true);
   const [isRevealed, setIsRevealed] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isRevealing, setIsRevealing] = useState(false);
   const [error, setError] = useState('');
   const [prize, setPrize] = useState<PrizeAttributes | null>(null);
 
+  useEffect(() => {
+    const fetchGameData = async () => {
+      if (!gameId) {
+        setError("ID do jogo não encontrado.");
+        setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
+      setError('');
+      try {
+        const response = await getGameDetails(gameId);
+        const game = response.data.data.attributes;
+        const includedData = response.data.included || [];
+        const prizeData = includedData.find((item: any) => item.type === 'prize')?.attributes;
+        
+        if (!prizeData) {
+          throw new Error("Detalhes do prêmio não foram encontrados na resposta da API.");
+        }
+
+        setPrize(prizeData);
+
+        if (game.status === 'finished') {
+          setIsRevealed(true);
+        }
+      } catch (err: any) {
+        setError(err.response?.data?.error || "Não foi possível carregar o jogo.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchGameData();
+  }, [gameId]);
+
   const handleReveal = async () => {
-    if (!gameId) {
-      setError("ID do jogo não encontrado.");
-      return;
-    }
-    setIsLoading(true);
-    setError('');
-    const response = await revealGame(gameId);
-    // Encontra o prêmio nos dados incluídos da resposta da API
-    const revealedPrize = response.data.included.find((item: any) => item.type === 'prize')?.attributes;
-    
-    if (!revealedPrize) {
-      throw new Error("Não foi possível carregar os detalhes do prêmio.");
-    }
+    if (!gameId) return;
 
-    setPrize(revealedPrize);
-    setIsRevealed(true);
-
-    // Atualiza o saldo do usuário no contexto global
-    if (user && revealedPrize.value_in_cents > 0) {
-      const newBalance = user.balance_in_cents + revealedPrize.value_in_cents;
-      updateBalance(newBalance);
+    setIsRevealing(true);
+    try {
+      const response = await revealGame(gameId);
+      const revealedPrize = response.data.included?.find((item: any) => item.type === 'prize')?.attributes;
+      
+      if (user && revealedPrize && revealedPrize.value_in_cents > 0) {
+        const newBalance = user.balance_in_cents + revealedPrize.value_in_cents;
+        updateBalance(newBalance);
+        toast.success(`Você ganhou R$ ${(revealedPrize.value_in_cents / 100).toFixed(2)}!`);
+      }
+      setIsRevealed(true); // Mostra o resultado
+    } catch (err: any) {
+      toast.error(err.response?.data?.error || "Ocorreu um erro ao revelar o prêmio.");
+    } finally {
+      setIsRevealing(false);
     }
   };
 
-  const renderPrize = () => {
+  const renderPrizeContent = () => {
     if (!prize) return null;
-
     const wonPrize = prize.value_in_cents > 0;
 
     return (
-      <div className={`text-center p-8 rounded-lg ${wonPrize ? 'bg-green-100' : 'bg-gray-100'}`}>
-        <h2 className="text-3xl font-bold mb-4">
-          {wonPrize ? `Parabéns! Você ganhou!` : 'Que pena!'}
-        </h2>
-
-        {/* --- LÓGICA DE EXIBIÇÃO DA IMAGEM --- */}
+      <div className={`w-full h-full flex flex-col items-center justify-center rounded-lg text-center ${wonPrize ? 'bg-yellow-500 bg-opacity-10' : 'bg-gray-500 bg-opacity-10'}`}>
         {prize.image_url ? (
-          <div className="my-4 flex justify-center">
-            <img 
-              src={prize.image_url} 
-              alt={prize.name} 
-              className="max-w-xs max-h-48 object-contain rounded-lg"
-            />
-          </div>
+          <img src={prize.image_url} alt={prize.name} className="max-h-24 object-contain mb-2" />
         ) : (
-          <p className={`text-5xl font-bold my-4 ${wonPrize ? 'text-green-600' : 'text-gray-700'}`}>
-            {wonPrize ? `R$ ${(prize.value_in_cents / 100).toFixed(2)}` : 'Não foi desta vez'}
+          <p className={`text-4xl font-bold ${wonPrize ? 'text-[var(--primary-gold)]' : 'text-[var(--text-secondary)]'}`}>
+            {wonPrize ? `R$ ${(prize.value_in_cents / 100).toFixed(2)}` : 'Tente Novamente'}
           </p>
         )}
-        {/* --- FIM DA LÓGICA --- */}
-
-        <p className="text-lg text-gray-800 font-semibold">{prize.name}</p>
-        
-        {wonPrize && prize.image_url && (
-            <p className="text-3xl font-bold mt-2 text-green-600">
-                R$ {(prize.value_in_cents / 100).toFixed(2)}
-            </p>
-        )}
-
-        <button
-          onClick={() => navigate('/games')}
-          className="mt-8 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-lg transition-colors"
-        >
-          Jogar Novamente
-        </button>
+        <p className="text-md font-semibold text-[var(--text-primary)] mt-2">{prize.name}</p>
       </div>
     );
   };
 
+  const renderContent = () => {
+    if (isLoading) {
+      return <p className="text-center text-[var(--text-secondary)]">Carregando Jogo...</p>;
+    }
+
+    if (error) {
+      return <p className="text-center text-red-400">{error}</p>;
+    }
+
+    if (isRevealed) {
+      return (
+        <>
+          <h2 className="text-3xl font-bold mb-4 text-[var(--primary-gold)]">
+            {prize && prize.value_in_cents > 0 ? `Você ganhou!` : 'Não foi desta vez!'}
+          </h2>
+          {renderPrizeContent()}
+          <button
+            onClick={() => navigate('/games')}
+            className="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg transition-colors"
+          >
+            Jogar Novamente
+          </button>
+        </>
+      );
+    }
+    
+    return (
+      <>
+        <h2 className="text-2xl font-bold mb-2 text-white">Sua Raspadinha</h2>
+        <p className="text-[var(--text-secondary)] mb-6">Clique no botão abaixo para revelar seu prêmio!</p>
+        <div className="w-full aspect-video mx-auto rounded-lg shadow-inner bg-black bg-opacity-20 flex items-center justify-center mb-6 border-2 border-dashed border-[var(--border-color)]">
+            <span className="text-gray-500 font-bold text-lg">Prêmio Oculto</span>
+        </div>
+        <button
+          onClick={handleReveal}
+          disabled={isRevealing}
+          className="w-full bg-[var(--primary-gold)] text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-yellow-500/20 hover:bg-yellow-300 disabled:bg-gray-500"
+        >
+          {isRevealing ? 'Revelando...' : 'Revelar Prêmio'}
+        </button>
+      </>
+    );
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center p-4 sm:p-8">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-2xl">
-        {isRevealed ? (
-          renderPrize()
-        ) : (
-          <div className="text-center p-8">
-            <h2 className="text-2xl font-bold mb-4">Sua Raspadinha</h2>
-            <p className="text-gray-600 mb-8">Clique no botão abaixo para revelar seu prêmio. Boa sorte!</p>
-            
-            {/* Área interativa da raspadinha */}
-            <div className="w-full h-40 bg-gray-300 mx-auto rounded-lg flex items-center justify-center mb-8 shadow-inner cursor-pointer" onClick={handleReveal}>
-              <span className="text-gray-500 font-bold text-lg">Raspe Aqui!</span>
-            </div>
-            
-            <button
-              onClick={handleReveal}
-              disabled={isLoading}
-              className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-4 rounded-lg transition-colors disabled:bg-gray-400"
-            >
-              {isLoading ? 'Revelando...' : 'Revelar Prêmio'}
-            </button>
-            {error && <p className="text-red-500 mt-4">{error}</p>}
-          </div>
-        )}
+    <div className="flex flex-col items-center justify-center">
+      <div className="w-full max-w-sm bg-[var(--surface-dark)] border border-[var(--border-color)] rounded-lg shadow-2xl p-8 text-center min-h-[420px]">
+        {renderContent()}
       </div>
     </div>
   );
