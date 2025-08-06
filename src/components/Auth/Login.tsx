@@ -26,12 +26,15 @@ const Login: React.FC = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[var(--background-dark)] px-4">
-      <div className="bg-[var(--surface-dark)] border border-[var(--border-color)] p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-6 text-center text-[var(--primary-gold)]">
+      <div className="bg-[var(--surface-dark)] border border-[var(--border-color)] p-8 rounded-lg shadow-lg w-full max-w-md text-center">
+        
+        <img src="/logo.png" alt="BrilhaSorte Logo" className="h-20 w-20 mx-auto mb-4" />
+
+        <h2 className="text-3xl font-bold mb-6 text-[var(--primary-gold)]">
           Bem-vindo de Volta!
         </h2>
         
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 text-left">
           <div>
             <input
               type="email"
