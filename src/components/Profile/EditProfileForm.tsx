@@ -13,7 +13,6 @@ interface EditProfileFormProps {
   onCancel: () => void;
 }
 
-// Esquema de validação com Zod para o formulário de perfil
 const profileSchema = z.object({
   full_name: z.string().min(3, "O nome completo é obrigatório"),
   cpf: z.string().min(11, "O CPF deve ter no mínimo 11 dígitos"),

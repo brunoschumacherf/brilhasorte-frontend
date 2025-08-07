@@ -13,7 +13,6 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
   }
 
   return (
-    // Fundo semi-transparente
     <div 
       className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-center items-center"
       onClick={onClose}
@@ -21,7 +20,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
       {/* Container do Modal */}
       <div 
         className="bg-white rounded-lg shadow-2xl w-full max-w-md m-4 relative"
-        onClick={(e) => e.stopPropagation()} // Impede que o clique dentro do modal o feche
+        onClick={(e) => e.stopPropagation()} 
       >
         {/* Cabeçalho do Modal */}
         <div className="flex justify-between items-center p-5 border-b border-gray-200">

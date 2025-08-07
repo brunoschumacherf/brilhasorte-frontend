@@ -30,7 +30,6 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     if (!isOpen) {
-      // Reseta o formulário e o estado do PIX quando o modal fecha
       reset({ amount: undefined, bonus_code: '' });
       setDepositData(null);
     }

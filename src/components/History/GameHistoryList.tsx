@@ -16,7 +16,6 @@ const GameHistoryList: React.FC = () => {
   useEffect(() => {
     getGameHistory()
       .then(response => {
-        // A API de histórico de jogos envia os dados relacionados em 'included'
         const includedData = response.data.included || [];
 
         const combinedGames = response.data.data.map(gameData => {

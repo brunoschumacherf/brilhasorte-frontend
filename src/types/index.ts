@@ -158,7 +158,6 @@ export interface GameHistoryItem {
   scratch_card: { name: string };
 }
 
-// Tipo atualizado para o prêmio
 export interface PrizeAttributes {
   id: number;
   name: string;
@@ -167,7 +166,6 @@ export interface PrizeAttributes {
   probability: number;
 }
 
-// Tipo atualizado para o jogo, incluindo a lista de prêmios
 export interface Game {
   status: string;
   scratch_card_prize: boolean;

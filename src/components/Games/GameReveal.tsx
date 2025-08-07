@@ -18,7 +18,6 @@ const shuffleArray = (array: any[]) => {
   return newArray;
 };
 
-// Prêmios "dummy" para preencher a grade quando necessário
 const DUMMY_PRIZES: PrizeAttributes[] = [
     { id: 'dummy1', name: 'Tente de Novo', value_in_cents: 0, image_url: null, probability: 0, stock: 0, scratch_card_id: 0, created_at: '', updated_at: '' },
     { id: 'dummy2', name: 'Que Pena', value_in_cents: 0, image_url: null, probability: 0, stock: 0, scratch_card_id: 0, created_at: '', updated_at: '' },
@@ -42,12 +41,10 @@ const GameReveal: React.FC = () => {
   const [scratchCardTitle, setScratchCardTitle] = useState('');
   const [gameRules, setGameRules] = useState('');
   
-  // ✨ NOVO: Estado para controlar a exibição dos confetes
   const [showConfetti, setShowConfetti] = useState(false);
 
   useEffect(() => {
     const fetchGameData = async () => {
-      // (Lógica de busca de dados permanece a mesma)
       if (!gameId) {
         setError("ID do jogo não encontrado.");
         setIsLoading(false);
@@ -108,7 +105,6 @@ const GameReveal: React.FC = () => {
     fetchGameData();
   }, [gameId]);
 
-  // ✨ NOVO: Efeito para controlar a duração dos confetes
   useEffect(() => {
     if (isRevealed && wonPrize && wonPrize.value_in_cents > 0) {
       setShowConfetti(true);
@@ -118,7 +114,6 @@ const GameReveal: React.FC = () => {
   }, [isRevealed, wonPrize]);
 
   const handleRevealApiCall = async () => {
-    // (Lógica da API permanece a mesma)
     if (!gameId || isRevealing) return;
     setIsRevealing(true);
     try {
@@ -148,7 +143,6 @@ const GameReveal: React.FC = () => {
   };
   
   const renderScratchableGrid = () => {
-    // (Renderização da grade permanece a mesma)
     return (
         <div className="grid grid-cols-3 gap-2 w-full h-full p-2 bg-black bg-opacity-20">
             {gridPrizes.map((prize, index) => (
@@ -168,7 +162,6 @@ const GameReveal: React.FC = () => {
     if (isLoading) return <p className="text-center text-[var(--text-secondary)]">Carregando Jogo...</p>;
     if (error) return <p className="text-center text-red-400">{error}</p>;
 
-    // ✨ NOVO: Tela de resultado totalmente redesenhada ✨
     if (isRevealed) {
       const hasWon = wonPrize && wonPrize.value_in_cents > 0;
 
@@ -214,7 +207,6 @@ const GameReveal: React.FC = () => {
     }
     
     if (isPending && wonPrize) {
-      // (Lógica da tela de jogo permanece a mesma)
       return (
         <>
           <h2 className="text-2xl font-bold mb-2 text-white">{scratchCardTitle}</h2>
