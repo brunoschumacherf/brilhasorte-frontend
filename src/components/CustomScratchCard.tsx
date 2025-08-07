@@ -20,6 +20,24 @@ const CustomScratchCard: React.FC<CustomScratchCardProps> = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
   const [isFinished, setIsFinished] = useState(false);
+  
+  // ✨ NOVO: Ref para armazenar o objeto de áudio
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // ✨ NOVO: Efeito para criar e configurar o objeto de áudio uma vez
+  useEffect(() => {
+    // O caminho do som deve ser relativo à pasta /public
+    const scratchAudio = new Audio('/sounds/scratch-sound.mp3');
+    scratchAudio.loop = true; // O som tocará repetidamente enquanto o usuário raspa
+    scratchAudio.preload = 'auto'; // Ajuda a carregar o som mais rápido
+    audioRef.current = scratchAudio;
+
+    // Função de limpeza para quando o componente for desmontado
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []); // O array vazio garante que este efeito rode apenas uma vez
 
   // ... (funções getPosition, scratch, checkCompletion não mudam) ...
   const getPosition = (event: MouseEvent | TouchEvent) => {
@@ -77,25 +95,26 @@ const CustomScratchCard: React.FC<CustomScratchCardProps> = ({
     const img = new Image();
     img.crossOrigin = 'anonymous';
     
-    // Sucesso: A imagem foi carregada, desenhe-a.
     img.onload = () => {
       ctx.drawImage(img, 0, 0, width, height);
     };
 
-    // ✨ FALHA: A imagem não foi encontrada.
     img.onerror = () => {
       console.error(`ERRO: A imagem da raspadinha não foi encontrada em '${coverImage}'. Verifique se o arquivo está na pasta /public.`);
-      // Desenha um fundo cinza para que não fique transparente.
-      ctx.fillStyle = '#888888'; // Cor de fallback
+      ctx.fillStyle = '#888888';
       ctx.fillRect(0, 0, width, height);
     };
     
     img.src = coverImage;
   }, [coverImage, width, height]);
   
-  // ... (funções handleStart, handleMove, handleEnd e o JSX de retorno não mudam) ...
+  // ✨ MODIFICADO: Funções de manipulação de eventos para controlar o som
   const handleStart = (event: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
     isDrawingRef.current = true;
+    
+    // Toca o som da raspagem
+    audioRef.current?.play().catch(e => console.error("Erro ao tocar áudio:", e));
+
     const pos = getPosition(event.nativeEvent);
     const ctx = canvasRef.current?.getContext('2d');
     if (pos && ctx) scratch(ctx, pos);
@@ -110,8 +129,15 @@ const CustomScratchCard: React.FC<CustomScratchCardProps> = ({
 
   const handleEnd = () => {
     if (isDrawingRef.current) {
-        isDrawingRef.current = false;
-        checkCompletion();
+      isDrawingRef.current = false;
+      
+      // Pausa o som e reinicia para a próxima vez
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      
+      checkCompletion();
     }
   };
 
@@ -120,17 +146,17 @@ const CustomScratchCard: React.FC<CustomScratchCardProps> = ({
       {children}
       {!isFinished && (
          <canvas
-            ref={canvasRef}
-            width={width}
-            height={height}
-            style={{ position: 'absolute', top: 0, left: 0, zIndex: 1, touchAction: 'none' }}
-            onMouseDown={handleStart}
-            onMouseMove={handleMove}
-            onMouseUp={handleEnd}
-            onMouseLeave={handleEnd}
-            onTouchStart={handleStart}
-            onTouchMove={handleMove}
-            onTouchEnd={handleEnd}
+           ref={canvasRef}
+           width={width}
+           height={height}
+           style={{ position: 'absolute', top: 0, left: 0, zIndex: 1, touchAction: 'none' }}
+           onMouseDown={handleStart}
+           onMouseMove={handleMove}
+           onMouseUp={handleEnd}
+           onMouseLeave={handleEnd} // Importante para parar o som se o mouse sair da área
+           onTouchStart={handleStart}
+           onTouchMove={handleMove}
+           onTouchEnd={handleEnd}
          />
       )}
     </div>
