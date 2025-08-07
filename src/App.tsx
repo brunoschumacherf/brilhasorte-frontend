@@ -13,6 +13,7 @@ import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import GamesPage from './pages/GamesPage';
+import MyGamesPage from './pages/MyGamesPage'; // Importar nova página
 import ProfilePage from './pages/ProfilePage';
 import GameRevealPage from './pages/GameRevealPage';
 import HistoryPage from './pages/HistoryPage';
@@ -36,30 +37,17 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <ToastContainer
-          position="top-right"
-          autoClose={5000}
-          hideProgressBar={false}
-          newestOnTop={false}
-          closeOnClick
-          rtl={false}
-          pauseOnFocusLoss
-          draggable
-          pauseOnHover
-          theme="dark"
-        />
-        
+        <ToastContainer position="top-right" autoClose={5000} hideProgressBar={false} newestOnTop={false} closeOnClick rtl={false} pauseOnFocusLoss draggable pauseOnHover theme="dark" />
         <Routes>
-          {/* Rotas Públicas (sem layout de Navbar) */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
           <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
-          {/* Rotas Privadas de Usuário (agrupadas sob o UserLayout) */}
           <Route path="/" element={<PrivateRoute><UserLayout /></PrivateRoute>}>
-            <Route index element={<Navigate to="/games" />} /> {/* Redireciona a raiz para /games */}
+            <Route index element={<Navigate to="/games" />} />
             <Route path="games" element={<GamesPage />} />
+            <Route path="my-games" element={<MyGamesPage />} />
             <Route path="games/:gameId" element={<GameRevealPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="history" element={<HistoryPage />} />
@@ -67,7 +55,6 @@ function App() {
             <Route path="referrals" element={<ReferralsPage />} />
           </Route>
 
-          {/* Rotas Privadas de Admin (agrupadas sob o AdminLayout) */}
           <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
             <Route index element={<Navigate to="/admin/dashboard" />} />
             <Route path="dashboard" element={<DashboardPage />} />
@@ -79,7 +66,6 @@ function App() {
             <Route path="scratch-cards" element={<ScratchCardsPage />} />
           </Route>
 
-          {/* Qualquer outra rota redireciona para o login se não estiver logado, ou para games se estiver */}
           <Route path="*" element={<Navigate to="/games" />} />
         </Routes>
       </Router>

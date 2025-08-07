@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getAdminWithdrawalList } from '../../../services/api';
 import type { AdminWithdrawalListItem } from '../../../types';
+import TableSkeleton from '../../Shared/TableSkeleton'; // Importar o skeleton
 
 const WithdrawalList: React.FC = () => {
   const [withdrawals, setWithdrawals] = useState<AdminWithdrawalListItem[]>([]);
@@ -8,26 +9,29 @@ const WithdrawalList: React.FC = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getAdminWithdrawalList()
-      .then(response => {
-        const includedData = response.data.included || [];
-        const withdrawalData = response.data.data.map(item => {
-          const userRel = item.relationships?.user.data;
-          const user = includedData.find(inc => inc.id === userRel?.id && inc.type === 'user');
-          return {
-            ...item.attributes,
-            id: parseInt(item.id),
-            user: user?.attributes as any || { id: null, full_name: 'N/A', email: 'N/A' },
-          };
+    // Adicionando um pequeno delay para que o skeleton seja visível
+    setTimeout(() => {
+      getAdminWithdrawalList()
+        .then(response => {
+          const includedData = response.data.included || [];
+          const withdrawalData = response.data.data.map(item => {
+            const userRel = item.relationships?.user.data;
+            const user = includedData.find(inc => inc.id === userRel?.id && inc.type === 'user');
+            return {
+              ...item.attributes,
+              id: parseInt(item.id),
+              user: user?.attributes as any || { id: null, full_name: 'N/A', email: 'N/A' },
+            };
+          });
+          setWithdrawals(withdrawalData);
+        })
+        .catch(() => {
+          setError('Não foi possível carregar a lista de saques.');
+        })
+        .finally(() => {
+          setLoading(false);
         });
-        setWithdrawals(withdrawalData);
-      })
-      .catch(() => {
-        setError('Não foi possível carregar a lista de saques.');
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    }, 500);
   }, []);
   
   const getStatusClass = (status: string) => {
@@ -40,7 +44,7 @@ const WithdrawalList: React.FC = () => {
     }
   };
 
-  if (loading) return <p className="text-gray-500">Carregando saques...</p>;
+  if (loading) return <TableSkeleton rows={10} cols={5} />; // Usar o skeleton
   if (error) return <p className="text-red-500">{error}</p>;
 
   return (

@@ -24,11 +24,12 @@ const Navbar: React.FC = () => {
 
   const renderNavLinks = (isMobile = false) => (
     <>
-      <NavLink to="/games" className={isMobile ? mobileNavLinkClasses : navLinkClasses} onClick={closeMenu}>Jogos</NavLink>
+      <NavLink to="/games" className={isMobile ? mobileNavLinkClasses : navLinkClasses} onClick={closeMenu}>Raspadinhas</NavLink>
       <NavLink to="/rankings" className={isMobile ? mobileNavLinkClasses : navLinkClasses} onClick={closeMenu}>Rankings</NavLink>
       <NavLink to="/referrals" className={isMobile ? mobileNavLinkClasses : navLinkClasses} onClick={closeMenu}>Afiliados</NavLink>
       <NavLink to="/history" className={isMobile ? mobileNavLinkClasses : navLinkClasses} onClick={closeMenu}>Histórico</NavLink>
       <NavLink to="/profile" className={isMobile ? mobileNavLinkClasses : navLinkClasses} onClick={closeMenu}>Perfil</NavLink>
+      <NavLink to="/my-games" className={isMobile ? mobileNavLinkClasses : navLinkClasses} onClick={closeMenu}>Minhas Raspadinhas</NavLink>
       {user?.admin && (
         <NavLink to="/admin/dashboard" className={`${isMobile ? mobileNavLinkClasses : navLinkClasses} bg-purple-600 hover:bg-purple-700 text-white`} onClick={closeMenu}>
           Admin

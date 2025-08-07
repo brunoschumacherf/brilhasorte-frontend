@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import DepositHistoryList from '../components/History/DepositHistoryList';
 import WithdrawalHistoryList from '../components/History/WithdrawalHistoryList';
-import GameHistoryList from '../components/History/GameHistoryList';
 
-type HistoryTab = 'games' | 'deposits' | 'withdrawals';
+type HistoryTab = 'deposits' | 'withdrawals';
 
 const HistoryPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<HistoryTab>('games');
+  const [activeTab, setActiveTab] = useState<HistoryTab>('deposits');
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'games':
-        return <GameHistoryList />;
       case 'deposits':
         return <DepositHistoryList />;
       case 'withdrawals':
@@ -40,11 +37,10 @@ const HistoryPage: React.FC = () => {
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="bg-[var(--surface-dark)] border border-[var(--border-color)] p-6 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold mb-2 text-[var(--primary-gold)]">Seu Histórico</h1>
-        <p className="text-[var(--text-secondary)] mb-6">Acompanhe todas as suas atividades na plataforma.</p>
+        <h1 className="text-3xl font-bold mb-2 text-[var(--primary-gold)]">Histórico de Transações</h1>
+        <p className="text-[var(--text-secondary)] mb-6">Acompanhe seus depósitos e saques.</p>
         
         <div className="flex justify-center space-x-2 mb-6 border-b border-[var(--border-color)] pb-4">
-          <TabButton tab="games" label="Jogos" />
           <TabButton tab="deposits" label="Depósitos" />
           <TabButton tab="withdrawals" label="Saques" />
         </div>

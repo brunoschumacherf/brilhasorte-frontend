@@ -28,7 +28,7 @@ const UserLayout: React.FC = () => {
     return () => {
       window.removeEventListener('focus', refreshProfile);
     };
-  }, [isAuthenticated]); /
+  }, [isAuthenticated]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[var(--background-dark)]">

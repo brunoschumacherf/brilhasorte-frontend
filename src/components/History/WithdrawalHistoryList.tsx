@@ -23,39 +23,43 @@ const WithdrawalHistoryList: React.FC = () => {
 
   const getStatusClass = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed':
+        return 'bg-green-900 bg-opacity-50 text-green-300';
+      case 'pending':
+        return 'bg-yellow-900 bg-opacity-50 text-yellow-300';
+      case 'processing':
+        return 'bg-blue-900 bg-opacity-50 text-blue-300';
+      case 'failed':
+        return 'bg-red-900 bg-opacity-50 text-red-300';
+      default:
+        return 'bg-gray-700 text-gray-300';
     }
   };
 
-  if (loading) return <p className="text-center p-4">Carregando histórico...</p>;
-  if (error) return <p className="text-center p-4 text-red-500">{error}</p>;
+  if (loading) return <p className="text-center p-4 text-[var(--text-secondary)]">Carregando histórico de saques...</p>;
+  if (error) return <p className="text-center p-4 text-red-400">{error}</p>;
 
   return (
-    <div className="bg-white shadow-md rounded-lg overflow-hidden">
-      <h3 className="text-xl font-semibold p-4 border-b">Histórico de Saques</h3>
+    <div>
       {withdrawals.length === 0 ? (
-        <p className="p-4 text-gray-500">Nenhum saque encontrado.</p>
+        <p className="p-4 text-center text-[var(--text-secondary)]">Nenhum saque encontrado.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="min-w-full">
+            <thead className="border-b border-[var(--border-color)]">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valor</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chave PIX</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-secondary)] uppercase">Data</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-secondary)] uppercase">Valor</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-secondary)] uppercase">Chave PIX</th>
+                <th className="px-6 py-3 text-left text-xs font-semibold text-[var(--text-secondary)] uppercase">Status</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody>
               {withdrawals.map((item) => (
-                <tr key={item.id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{new Date(item.created_at).toLocaleString('pt-BR')}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R$ {(item.amount_in_cents / 100).toFixed(2)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.pix_key} ({item.pix_key_type})</td>
+                <tr key={item.id} className="border-b border-[var(--border-color)] hover:bg-[#2a2a2a]">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-secondary)]">{new Date(item.created_at).toLocaleString('pt-BR')}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-primary)] font-semibold">R$ {(item.amount_in_cents / 100).toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-[var(--text-secondary)]">{item.pix_key} ({item.pix_key_type})</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(item.status)}`}>
                       {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
