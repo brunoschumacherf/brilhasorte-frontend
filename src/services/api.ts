@@ -56,10 +56,9 @@ export const getGameDetails = (gameId: string) => api.get<JsonApiSingular<Game>>
 
 
 // Depósito
-export const createDeposit = (amount_in_cents: number) => 
-  api.post<JsonApiSingular<DepositResponse>>('/api/v1/deposits', { 
-    deposit: { amount_in_cents } 
-  });
+export const createDeposit = (data: { amount_in_cents: number; bonus_code?: string }) => 
+  api.post<JsonApiSingular<DepositResponse>>('/api/v1/deposits', { deposit: data });
+
 export const getDepositHistory = () => api.get<JsonApiCollection<DepositHistoryItem>>('/api/v1/deposits');
 
 // Saque
