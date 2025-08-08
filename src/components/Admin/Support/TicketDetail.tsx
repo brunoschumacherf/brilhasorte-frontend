@@ -22,10 +22,17 @@ const TicketDetail: React.FC = () => {
     setLoading(true);
     getAdminTicketDetails(ticketNumber)
       .then(response => {
-        const ticketData = { id: parseInt(response.data.data.id), ...response.data.data.attributes};
+        const { id, ...attributes } = response.data.data.attributes;
+        const ticketData = { id: parseInt(response.data.data.id), ...attributes };
         setTicket(ticketData);
 
-        const included = response.data.included || [];
+        type IncludedItem = {
+          id: string;
+          type: string;
+          attributes: any;
+          relationships?: any;
+        };
+        const included: IncludedItem[] = response.data.included || [];
         const userMap = new Map(included.filter(i => i.type === 'user').map(u => [u.id, u.attributes]));
         
         const ticketOwnerId = response.data.data.relationships.user.data.id;

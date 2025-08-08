@@ -14,8 +14,8 @@ const TicketList: React.FC = () => {
     getAdminTickets()
       .then(response => {
         const ticketData = response.data.data.map(item => ({
-             id: parseInt(item.id),
-            ...item.attributes
+            ...item.attributes,
+            id: parseInt(item.id)
         }));
         setTickets(ticketData);
       })

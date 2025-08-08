@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect, ReactNode } from 'react';
+import React, { useState, useMemo, useRef, useEffect, type ReactNode } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import DepositModal from '../Wallet/DepositModal';
@@ -41,7 +41,14 @@ const BalanceDisplay = ({ balanceInCents }: { balanceInCents: number }) => (
     </div>
 );
 
-const UserActions = ({ user, onDeposit, onWithdraw, onLogout }) => (
+type UserActionsProps = {
+    user: { balance_in_cents: number };
+    onDeposit: () => void;
+    onWithdraw: () => void;
+    onLogout: () => void;
+};
+
+const UserActions: React.FC<UserActionsProps> = ({ user, onDeposit, onWithdraw, onLogout }) => (
     <div className="flex items-center space-x-3">
         <BalanceDisplay balanceInCents={user.balance_in_cents} />
         <button onClick={onWithdraw} className="bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 px-3 rounded-md text-sm transition-colors">Sacar</button>
@@ -56,8 +63,8 @@ const DesktopDropdownMenu = ({ items, triggerText, triggerIcon }: { items: { to:
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setIsOpen(false);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && event.target instanceof Node && !dropdownRef.current.contains(event.target)) setIsOpen(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);

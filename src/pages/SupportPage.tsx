@@ -15,7 +15,12 @@ const SupportPage: React.FC = () => {
     setLoading(true);
     getTickets()
       .then(response => {
-        setTickets(response.data.data.map(item => ({ id: parseInt(item.id), ...item.attributes })));
+        setTickets(
+          response.data.data.map(item => {
+            const { id, ...attributesWithoutId } = item.attributes;
+            return { id: parseInt(item.id), ...attributesWithoutId };
+          })
+        );
       })
       .catch(() => setError('Não foi possível carregar seus tickets.'))
       .finally(() => setLoading(false));

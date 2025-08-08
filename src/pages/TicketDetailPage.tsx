@@ -21,7 +21,7 @@ const TicketDetailPage: React.FC = () => {
     getTicketDetails(ticketNumber)
       .then(response => {
         setTicket(response.data.data.attributes);
-        const included = response.data.included || [];
+        const included = (response.data.included || []) as Array<{ type: string; id: string; attributes: any; relationships?: any }>;
         const userMap = new Map(included.filter(i => i.type === 'user').map(u => [u.id, u.attributes]));
         const ticketReplies = included
           .filter(i => i.type === 'ticket_reply')

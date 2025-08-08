@@ -221,6 +221,8 @@ export interface TicketReply {
   message: string;
   created_at: string;
   user: {
+    id: number | undefined;
+    admin: any;
     full_name: string;
   };
 }
