@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from './Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 import { getProfile } from '../../services/api';
+import Footer from './Footer';
 import { toast } from 'react-toastify';
 
 const UserLayout: React.FC = () => {
@@ -36,6 +37,7 @@ const UserLayout: React.FC = () => {
       <main className="flex-grow">
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 };
