@@ -18,7 +18,9 @@ import type {
   AdminWithdrawalListItem,
   AdminGameListItem,
   AdminBonusCode,
-  AdminScratchCard
+  AdminScratchCard,
+  Ticket,
+  TicketReply
 } from '../types';
 
 const api = axios.create({
@@ -109,6 +111,17 @@ export const createAdminScratchCard = (data: any) =>
 export const updateAdminScratchCard = (id: number, data: any) => 
   api.patch<JsonApiSingular<AdminScratchCard>>(`/api/v1/admin/scratch_cards/${id}`, { scratch_card: data });
 export const getAdminScratchCardDetails = (id: number) => api.get<JsonApiSingular<AdminScratchCard>>(`/api/v1/admin/scratch_cards/${id}`);
+
+
+
+export const getTickets = () => api.get<JsonApiCollection<Ticket>>('/api/v1/tickets');
+export const getTicketDetails = (ticketNumber: string) => api.get<JsonApiSingular<Ticket>>(`/api/v1/tickets/${ticketNumber}`);
+export const createTicket = (data: { subject: string, message: string }) => api.post<JsonApiSingular<Ticket>>('/api/v1/tickets', { ticket: data });
+export const createTicketReply = (ticketNumber: string, message: string) => api.post<JsonApiSingular<TicketReply>>(`/api/v1/tickets/${ticketNumber}/reply`, { reply: { message } });
+
+export const getAdminTickets = () => api.get<JsonApiCollection<Ticket>>('/api/v1/admin/tickets');
+export const getAdminTicketDetails = (ticketNumber: string) => api.get<JsonApiSingular<Ticket>>(`/api/v1/admin/tickets/${ticketNumber}`);
+export const createAdminTicketReply = (ticketNumber: string, message: string, close_ticket: boolean) => api.post<JsonApiSingular<TicketReply>>(`/api/v1/admin/tickets/${ticketNumber}/reply`, { reply: { message, close_ticket } });
 
 
 export default api;

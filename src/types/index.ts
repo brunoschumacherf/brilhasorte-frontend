@@ -207,3 +207,20 @@ export interface JsonApiSingular<T> {
   included: never[];
   data: JsonApiData<T>;
 }
+
+export interface Ticket {
+  id: number;
+  ticket_number: string;
+  subject: string;
+  status: 'open' | 'client_reply' | 'admin_reply' | 'closed';
+  created_at: string;
+}
+
+export interface TicketReply {
+  id: number;
+  message: string;
+  created_at: string;
+  user: {
+    full_name: string;
+  };
+}

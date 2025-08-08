@@ -8,6 +8,8 @@ const GamesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w
 const TransactionsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
 const BonusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M5 5v14a2 2 0 002 2h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0a2 2 0 00-2-2H9a2 2 0 00-2 2m4 0a2 2 0 00-2-2h-2a2 2 0 00-2 2m4 0V3m0 2v2m0-2a2 2 0 012 2v2m-4-4a2 2 0 00-2 2v2m0-2H9m2 0h2m2 10v-2a2 2 0 00-2-2H9a2 2 0 00-2 2v2m8-2a2 2 0 00-2-2h-2a2 2 0 00-2 2m0 0v2m0-2a2 2 0 012-2h2a2 2 0 012 2m0 0H9" /></svg>;
 const ScratchCardIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 012-2h3a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5z" /></svg>;
+const SupportIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 0a5 5 0 10-7.07 7.071 5 5 0 007.07-7.071zm-4.95-4.95a7 7 0 10-9.9 9.9 7 7 0 009.9-9.9z" /></svg>;
+
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
@@ -44,6 +46,7 @@ const AdminLayout: React.FC = () => {
           <NavLink to="/admin/withdrawals" className={navLinkClasses}><TransactionsIcon />Saques</NavLink>
           <NavLink to="/admin/bonus-codes" className={navLinkClasses}><BonusIcon />Códigos de Bônus</NavLink>
           <NavLink to="/admin/scratch-cards" className={navLinkClasses}><ScratchCardIcon />Raspadinhas</NavLink>
+          <NavLink to="/admin/support" className={navLinkClasses}><SupportIcon />Suporte</NavLink>
         </nav>
         <div className="p-4 border-t border-gray-700">
           <NavLink to="/games" className="text-sm text-gray-400 hover:text-white transition-colors">

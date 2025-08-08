@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+// Componentes
 import UserLayout from './components/Layout/UserLayout';
 import AdminLayout from './components/Admin/AdminLayout';
 import AdminRoute from './components/Admin/AdminRoute';
@@ -13,7 +14,7 @@ import RegisterPage from './pages/RegisterPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import GamesPage from './pages/GamesPage';
-import MyGamesPage from './pages/MyGamesPage'; // Importar nova página
+import MyGamesPage from './pages/MyGamesPage';
 import ProfilePage from './pages/ProfilePage';
 import GameRevealPage from './pages/GameRevealPage';
 import HistoryPage from './pages/HistoryPage';
@@ -26,6 +27,11 @@ import WithdrawalsPage from './pages/Admin/WithdrawalsPage';
 import AdminGamesPage from './pages/Admin/GamesPage';
 import BonusCodesPage from './pages/Admin/BonusCodesPage';
 import ScratchCardsPage from './pages/Admin/ScratchCardsPage';
+import SupportPage from './pages/SupportPage';
+import TicketDetailPage from './pages/TicketDetailPage';
+import AdminSupportPage from './pages/Admin/SupportPage'; // Criar esta página
+import AdminSupportDetailPage from './pages/Admin/SupportDetailPage'; // Criar esta página
+
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { isAuthenticated, loading } = useAuth();
@@ -53,6 +59,8 @@ function App() {
             <Route path="history" element={<HistoryPage />} />
             <Route path="rankings" element={<RankingsPage />} />
             <Route path="referrals" element={<ReferralsPage />} />
+            <Route path="support" element={<SupportPage />} /> {/* Nova Rota */}
+            <Route path="support/:ticketNumber" element={<TicketDetailPage />} /> {/* Nova Rota */}
           </Route>
 
           <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
@@ -64,6 +72,8 @@ function App() {
             <Route path="games" element={<AdminGamesPage />} />
             <Route path="bonus-codes" element={<BonusCodesPage />} />
             <Route path="scratch-cards" element={<ScratchCardsPage />} />
+            <Route path="support" element={<AdminSupportPage />} /> {/* Nova Rota */}
+            <Route path="support/:ticketNumber" element={<AdminSupportDetailPage />} /> {/* Nova Rota */}
           </Route>
 
           <Route path="*" element={<Navigate to="/games" />} />
