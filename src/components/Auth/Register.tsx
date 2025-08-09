@@ -39,7 +39,7 @@ const Register: React.FC = () => {
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
-      await registerUser(data);
+      await registerUser(data as any);
       toast.success("Cadastro realizado com sucesso!");
       navigate('/games');
     } catch (err: any) {

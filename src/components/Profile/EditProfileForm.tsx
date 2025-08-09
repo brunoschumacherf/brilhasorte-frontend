@@ -1,10 +1,12 @@
 import React from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import type { User } from '../../types';
+import { updateProfile } from '../../services/api';
 
 interface EditProfileFormProps {
   user: User;
-  onSave: (data: Partial<User>) => Promise<void>;
+  onSave: (data: Partial<User>) => void; // A função onSave agora é síncrona, corrigindo o erro
   onCancel: () => void;
 }
 
@@ -17,9 +19,24 @@ const EditProfileForm: React.FC<EditProfileFormProps> = ({ user, onSave, onCance
   });
 
   const onSubmit: SubmitHandler<User> = async (data) => {
-    // Remove o CPF dos dados enviados para atualização
+    // Remove o CPF dos dados, pois ele não pode ser alterado
     const { cpf, ...updatableData } = data;
-    await onSave(updatableData);
+    
+    try {
+      // Chama a API para atualizar o perfil
+      const response = await updateProfile(updatableData);
+      
+      // Se a API responder com sucesso, extrai os novos dados
+      const updatedUser = response.data.data.attributes;
+      
+      toast.success("Perfil atualizado com sucesso!");
+      
+      // Chama a função onSave passada pelo pai para atualizar a UI
+      onSave(updatedUser);
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || 'Erro ao atualizar o perfil.';
+      toast.error(errorMessage);
+    }
   };
 
   return (

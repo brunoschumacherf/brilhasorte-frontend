@@ -2,8 +2,14 @@ import React from 'react';
 import type { AdminPlinkoGameListItem } from '../../../types';
 import TableSkeleton from '../../Shared/TableSkeleton';
 
+// Tipo ajustado para refletir os dados processados que o componente recebe
+type ProcessedPlinkoGame = AdminPlinkoGameListItem['attributes'] & {
+  id: string;
+  relationships: any;
+};
+
 interface PlinkoGameListProps {
-  games: AdminPlinkoGameListItem[];
+  games: ProcessedPlinkoGame[];
   loading: boolean;
   included: any[];
 }
@@ -47,12 +53,12 @@ const PlinkoGameList: React.FC<PlinkoGameListProps> = ({ games, loading, include
             {loading ? <TableSkeleton cols={7} /> : games.map((game) => (
               <tr key={game.id} className="hover:bg-gray-700">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(game.relationships.user.data.id)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatBalance(game.attributes.bet_amount)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-semibold">{formatBalance(game.attributes.winnings)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.attributes.rows}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{getRiskLabel(game.attributes.risk)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.attributes.multiplier}x</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{new Date(game.attributes.created_at).toLocaleString('pt-BR')}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatBalance(game.bet_amount)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-semibold">{formatBalance(game.winnings)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.rows}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{getRiskLabel(game.risk)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.multiplier}x</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{new Date(game.created_at).toLocaleString('pt-BR')}</td>
               </tr>
             ))}
           </tbody>

@@ -173,6 +173,8 @@ export interface PrizeAttributes {
 }
 
 export interface Game {
+  scratch_card_rules: string;
+  scratch_card_title: string;
   status: string;
   scratch_card_prize: boolean;
   id: string;

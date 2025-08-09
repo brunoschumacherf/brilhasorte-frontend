@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion'; 
-import Confetti from 'react-confetti'; 
-import { getGameDetails, revealGame } from '../../services/api'; 
-import { useAuth } from '../../contexts/AuthContext'; 
+import { motion } from 'framer-motion';
+import Confetti from 'react-confetti';
+import { getGameDetails, revealGame } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
-import type { PrizeAttributes } from '../../types'; 
-import CustomScratchCard from '../../components/CustomScratchCard'; // Ajuste o caminho se necessário
-
+import type { PrizeAttributes, JsonApiData } from '../../types';
+import CustomScratchCard from '../../components/CustomScratchCard';
 
 const shuffleArray = (array: any[]) => {
   const newArray = [...array];
@@ -18,10 +17,11 @@ const shuffleArray = (array: any[]) => {
   return newArray;
 };
 
+// Corrigido: 'id' agora é um número para corresponder ao tipo PrizeAttributes
 const DUMMY_PRIZES: PrizeAttributes[] = [
-    { id: 'dummy1', name: 'Tente de Novo', value_in_cents: 0, image_url: null, probability: 0, stock: 0, scratch_card_id: 0, created_at: '', updated_at: '' },
-    { id: 'dummy2', name: 'Que Pena', value_in_cents: 0, image_url: null, probability: 0, stock: 0, scratch_card_id: 0, created_at: '', updated_at: '' },
-    { id: 'dummy3', name: 'Não Foi Desta Vez', value_in_cents: 0, image_url: null, probability: 0, stock: 0, scratch_card_id: 0, created_at: '', updated_at: '' }
+  { id: 999997, name: 'Tente de Novo', value_in_cents: 0, image_url: null, probability: 0 },
+  { id: 999998, name: 'Que Pena', value_in_cents: 0, image_url: null, probability: 0 },
+  { id: 999999, name: 'Não Foi Desta Vez', value_in_cents: 0, image_url: null, probability: 0 }
 ];
 
 const GameReveal: React.FC = () => {
@@ -56,17 +56,19 @@ const GameReveal: React.FC = () => {
       try {
         const response = await getGameDetails(gameId);
         const game = response.data.data.attributes;
-        const includedData = response.data.included || [];
+        const includedData: JsonApiData<any>[] = response.data.included || [];
 
         setScratchCardTitle(game.scratch_card_title || 'Encontre 3 Iguais!');
         setGameRules(game.scratch_card_rules || 'Encontre 3 símbolos iguais para ganhar o prêmio correspondente.');
 
         const prizeId = response.data.data.relationships.prize.data.id;
-        const wonPrizeData = includedData.find((item: any) => item.type === 'prize' && item.id === prizeId)?.attributes;
+        const wonPrizeData = includedData.find(item => item.type === 'prize' && item.id === prizeId)?.attributes;
+        
         if (!wonPrizeData) throw new Error("Prêmio do jogo não encontrado.");
         setWonPrize(wonPrizeData);
         
-        const allPossiblePrizes = game.scratch_card_prize || [];
+        // Corrigido: Verifica se scratch_card_prize é um array antes de usá-lo
+        const allPossiblePrizes = Array.isArray(game.scratch_card_prize) ? game.scratch_card_prize : [];
         setPossiblePrizes(allPossiblePrizes);
 
         const gridSize = 9;
@@ -74,16 +76,17 @@ const GameReveal: React.FC = () => {
         
         let grid = Array(itemsToWin).fill(wonPrizeData);
         const distractors = allPossiblePrizes.filter(p => p.id !== wonPrizeData.id);
+        
         for (const distractor of distractors) {
-            if (grid.length < gridSize) {
-                grid.push(distractor);
-            }
+          if (grid.length < gridSize) {
+            grid.push(distractor);
+          }
         }
         
         let dummyIndex = 0;
         while (grid.length < gridSize) {
-            grid.push(DUMMY_PRIZES[dummyIndex % DUMMY_PRIZES.length]);
-            dummyIndex++;
+          grid.push(DUMMY_PRIZES[dummyIndex % DUMMY_PRIZES.length]);
+          dummyIndex++;
         }
         
         setGridPrizes(shuffleArray(grid));
@@ -108,7 +111,7 @@ const GameReveal: React.FC = () => {
   useEffect(() => {
     if (isRevealed && wonPrize && wonPrize.value_in_cents > 0) {
       setShowConfetti(true);
-      const timer = setTimeout(() => setShowConfetti(false), 6000); // Duração de 6 segundos
+      const timer = setTimeout(() => setShowConfetti(false), 6000);
       return () => clearTimeout(timer);
     }
   }, [isRevealed, wonPrize]);
@@ -172,7 +175,6 @@ const GameReveal: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Efeito de confete condicional */}
           {hasWon && showConfetti && <Confetti recycle={false} numberOfPieces={250} gravity={0.1} />}
 
           <div className={`w-full rounded-2xl p-6 flex flex-col items-center shadow-2xl ${hasWon ? 'bg-gradient-to-br from-yellow-800 via-gray-900 to-black border-yellow-500' : 'bg-gradient-to-br from-blue-900 via-gray-800 to-gray-900 border-blue-700'} border-2`}>
@@ -181,7 +183,7 @@ const GameReveal: React.FC = () => {
               {hasWon ? `VOCÊ GANHOU!` : 'Não foi desta vez'}
             </h2>
             <p className={`text-xl font-light mb-6 ${hasWon ? 'text-yellow-300' : 'text-blue-300'}`}>
-              {hasWon ? wonPrize.name : 'Não desanime, tente novamente!'}
+              {hasWon && wonPrize ? wonPrize.name : 'Não desanime, tente novamente!'}
             </p>
 
             {hasWon && wonPrize && (

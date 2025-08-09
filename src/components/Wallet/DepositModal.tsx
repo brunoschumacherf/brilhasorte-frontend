@@ -1,22 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useForm, type SubmitHandler } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Modal from '../Shared/Modal';
 import { createDeposit } from '../../services/api';
 import type { DepositResponse } from '../../types';
 import { toast } from 'react-toastify';
 
-// Zod schema para validação do formulário
-const depositSchema = z.object({
-  amount: z.preprocess(
-    (val) => Number(String(val).replace(',', '.')),
-    z.number().positive("O valor deve ser positivo.").min(1, "O valor mínimo é R$ 1,00")
-  ),
-  bonus_code: z.string().optional(),
-});
-
-type DepositFormData = z.infer<typeof depositSchema>;
+// Interface para os dados do formulário
+interface DepositFormData {
+  amount: number;
+  bonus_code?: string;
+}
 
 interface DepositModalProps {
   isOpen: boolean;
@@ -26,18 +19,15 @@ interface DepositModalProps {
 const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
   const [depositData, setDepositData] = useState<DepositResponse | null>(null);
   
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<DepositFormData>({
-    resolver: zodResolver(depositSchema),
-  });
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<DepositFormData>();
 
   // Limpa o estado do modal quando ele é fechado
   useEffect(() => {
     if (!isOpen) {
-      // Usar um timeout para evitar que o conteúdo do modal desapareça abruptamente
       setTimeout(() => {
         reset({ amount: undefined, bonus_code: '' });
         setDepositData(null);
-      }, 300); // 300ms para coincidir com a animação de fade-out
+      }, 300);
     }
   }, [isOpen, reset]);
 
@@ -75,7 +65,11 @@ const DepositModal: React.FC<DepositModalProps> = ({ isOpen, onClose }) => {
           <div>
             <label htmlFor="amount" className="form-label">Valor do Depósito (R$)</label>
             <input
-              {...register("amount")}
+              {...register("amount", { 
+                required: "O valor é obrigatório",
+                valueAsNumber: true,
+                min: { value: 1, message: "O valor mínimo é R$ 1,00" } 
+              })}
               type="number"
               id="amount"
               placeholder="Ex: 50,00"

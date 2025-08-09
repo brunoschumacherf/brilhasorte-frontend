@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getGameHistory } from '../services/api';
-import type { GameHistoryItem } from '../types';
+import type { GameHistoryItem } from '../types'; 
 import EmptyState from '../components/Shared/EmptyState';
 
 const GamesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>;
 
+// Tipo para os dados processados que serão usados no estado do componente
+type ProcessedGame = GameHistoryItem & {
+  status: 'pending' | 'finished';
+  prize: { name: string };
+  scratch_card: { name: string };
+};
+
 const MyGamesPage: React.FC = () => {
-  const [pendingGames, setPendingGames] = useState<GameHistoryItem[]>([]);
-  const [finishedGames, setFinishedGames] = useState<GameHistoryItem[]>([]);
+  const [pendingGames, setPendingGames] = useState<ProcessedGame[]>([]);
+  const [finishedGames, setFinishedGames] = useState<ProcessedGame[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -16,10 +23,23 @@ const MyGamesPage: React.FC = () => {
   useEffect(() => {
     getGameHistory()
       .then(response => {
-        const allGames = response.data.data.map(item => ({
-          ...item.attributes,
-          id: parseInt(item.id),
-        }));
+        const includedData = response.data.included || [];
+
+        const allGames: ProcessedGame[] = response.data.data.map(item => {
+          const prizeRel = item.relationships?.prize.data;
+          const cardRel = item.relationships?.scratch_card.data;
+
+          const prize = includedData.find(inc => inc.id === prizeRel?.id && inc.type === 'prize');
+          const scratchCard = includedData.find(inc => inc.id === cardRel?.id && inc.type === 'scratch_card');
+
+          return {
+            ...item.attributes,
+            id: parseInt(item.id, 10),
+            prize: { name: prize?.attributes.name || 'N/A' },
+            scratch_card: { name: scratchCard?.attributes.name || 'N/A' },
+          };
+        });
+
         setPendingGames(allGames.filter(game => game.status === 'pending'));
         setFinishedGames(allGames.filter(game => game.status === 'finished'));
       })

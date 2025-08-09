@@ -5,18 +5,31 @@ import DepositModal from '../Wallet/DepositModal';
 import WithdrawalModal from '../Wallet/WithdrawalModal';
 import { Menu, X, ChevronDown, User, Gamepad2 } from 'lucide-react';
 
+// --- DEFINIÇÃO DE TIPOS PARA OS ITENS DE NAVEGAÇÃO ---
+type NavLinkItem = {
+  label: string;
+  to: string;
+  adminOnly?: boolean;
+};
+
+type NavTitleItem = {
+  label: string;
+  isTitle: true;
+};
+
+type NavItem = NavLinkItem | NavTitleItem;
+
+
 // --- ESTRUTURA DE DADOS DOS LINKS ---
 
-// 1. Links para o novo menu "Jogo"
-const gameNavItems = [
+const gameNavItems: NavLinkItem[] = [
   { label: 'Raspadinha', to: '/games' },
   { label: 'Mines', to: '/mines' },
   { label: 'Double', to: '/games' },
   { label: 'Plinko', to: '/plinko' },
 ];
 
-// 2. Links para o menu "Minha Conta"
-const accountNavItems = [
+const accountNavItems: NavLinkItem[] = [
   { to: '/rankings', label: 'Rankings' },
   { to: '/history', label: 'Histórico' },
   { to: '/my-games', label: 'Minhas Raspadinhas' },
@@ -57,8 +70,7 @@ const UserActions: React.FC<UserActionsProps> = ({ user, onDeposit, onWithdraw, 
     </div>
 );
 
-// Componente de Dropdown genérico e reutilizável
-const DesktopDropdownMenu = ({ items, triggerText, triggerIcon }: { items: { to: string, label: string }[], triggerText: string, triggerIcon: ReactNode }) => {
+const DesktopDropdownMenu = ({ items, triggerText, triggerIcon }: { items: NavLinkItem[], triggerText: string, triggerIcon: ReactNode }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -107,16 +119,13 @@ const Navbar: React.FC = () => {
   const [isDepositModalOpen, setIsDepositModalOpen] = useState(false);
   const [isWithdrawalModalOpen, setIsWithdrawalModalOpen] = useState(false);
 
-  // Filtra os links de conta que o usuário pode ver
   const accessibleAccountItems = useMemo(() => {
     if (!isAuthenticated) return [];
     return accountNavItems.filter(item => !item.adminOnly || (item.adminOnly && user?.admin));
   }, [isAuthenticated, user]);
   
-  // Junta todos os links para o menu mobile
-  const allAccessibleNavItems = useMemo(() => {
+  const allAccessibleNavItems = useMemo((): NavItem[] => {
     if(!isAuthenticated) return [];
-    // Adiciona um "título" para os jogos no mobile para melhor organização
     return [
         { label: 'Jogos', isTitle: true },
         ...gameNavItems,
@@ -130,13 +139,17 @@ const Navbar: React.FC = () => {
     setIsMenuOpen(false);
     navigate('/login');
   };
+  
+  const handleWithdrawalSuccess = () => {
+    // Adicione qualquer lógica necessária após um saque bem-sucedido, como atualizar o saldo.
+    console.log("Saque realizado com sucesso!");
+  };
 
   return (
     <>
       <nav className="sticky top-0 z-40 bg-black/80 backdrop-blur-sm border-b border-[var(--border-color)]">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            {/* Lado Esquerdo: Logo e Menus de Navegação */}
             <div className="flex items-center gap-4">
               <Logo />
               <div className="hidden md:flex md:items-center md:gap-2">
@@ -157,12 +170,10 @@ const Navbar: React.FC = () => {
               </div>
             </div>
 
-            {/* Lado Direito Desktop: Ações do Usuário */}
             <div className="hidden md:block">
               {isAuthenticated && user && <UserActions user={user} onDeposit={() => setIsDepositModalOpen(true)} onWithdraw={() => setIsWithdrawalModalOpen(true)} onLogout={handleLogout} />}
             </div>
             
-            {/* Lado Direito Mobile: Saldo e Botão de Menu */}
             <div className="flex items-center gap-2 md:hidden">
               {isAuthenticated && user && <BalanceDisplay balanceInCents={user.balance_in_cents} />}
               <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="inline-flex items-center justify-center rounded-md p-2 text-gray-400 hover:bg-gray-700 hover:text-white">
@@ -172,21 +183,23 @@ const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Painel do Menu Mobile */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-gray-700">
             {isAuthenticated ? (
                <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
-                {allAccessibleNavItems.map((item) => 
-                  item.isTitle ? (
-                    <h3 key={item.label} className="px-3 pt-4 pb-1 text-xs font-bold uppercase text-gray-500">{item.label}</h3>
-                  ) : (
+                {allAccessibleNavItems.map((item) => {
+                  // Corrigido: Verifica se 'isTitle' existe no item para decidir como renderizar
+                  if ('isTitle' in item) {
+                    return <h3 key={item.label} className="px-3 pt-4 pb-1 text-xs font-bold uppercase text-gray-500">{item.label}</h3>;
+                  }
+                  // Se não for um título, é um link
+                  return (
                     <NavLink key={item.label} to={item.to} onClick={() => setIsMenuOpen(false)}
                       className="block px-3 py-2 rounded-md text-base font-medium text-gray-300 hover:bg-gray-700 hover:text-white">
                       {item.label}
                     </NavLink>
-                  )
-                )}
+                  );
+                })}
                 <div className="border-t border-gray-600 mt-4 pt-4 space-y-2">
                     <button onClick={() => { setIsDepositModalOpen(true); setIsMenuOpen(false); }} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium bg-green-500 text-white">Depositar</button>
                     <button onClick={() => { setIsWithdrawalModalOpen(true); setIsMenuOpen(false); }} className="w-full text-left block px-3 py-2 rounded-md text-base font-medium bg-yellow-500 text-black">Sacar</button>
@@ -203,9 +216,9 @@ const Navbar: React.FC = () => {
         )}
       </nav>
 
-      {/* Modais */}
       <DepositModal isOpen={isDepositModalOpen} onClose={() => setIsDepositModalOpen(false)} />
-      <WithdrawalModal isOpen={isWithdrawalModalOpen} onClose={() => setIsWithdrawalModalOpen(false)} />
+      {/* Corrigido: A prop 'onSuccess' agora recebe uma função válida */}
+      <WithdrawalModal isOpen={isWithdrawalModalOpen} onClose={() => setIsWithdrawalModalOpen(false)} onSuccess={handleWithdrawalSuccess} />
     </>
   );
 };

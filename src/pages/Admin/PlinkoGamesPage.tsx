@@ -2,27 +2,36 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { getAdminPlinkoGameList } from '../../services/api';
 import PlinkoGameList from '../../components/Admin/Plinko/PlinkoGameList';
-import PaginationControls from '../../components/Shared/PaginationControls'; // 1. Importe o componente
+import PaginationControls from '../../components/Shared/PaginationControls';
 import type { AdminPlinkoGameListItem } from '../../types';
 
+// Tipo para os dados processados que serão usados no estado do componente
+type ProcessedPlinkoGame = AdminPlinkoGameListItem['attributes'] & {
+  id: string;
+  relationships: any;
+};
+
 const PlinkoGamesPage: React.FC = () => {
-  const [games, setGames] = useState<AdminPlinkoGameListItem[]>([]);
+  const [games, setGames] = useState<ProcessedPlinkoGame[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // 2. Adicione estados para a paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // 3. Modifique a função para aceitar e usar a página
   const fetchGames = async (page: number) => {
     setLoading(true);
     try {
       const response = await getAdminPlinkoGameList(page);
-      setGames(response.data.data);
-      setIncluded(response.data.included || []);
+
+      // Corrigido: Mapeia a resposta para a estrutura de dados correta e "plana"
+      const formattedGames: ProcessedPlinkoGame[] = response.data.data.map(item => ({
+        ...item.attributes, // Espalha os atributos como bet_amount, risk, etc.
+        id: item.id,       // Usa o ID principal do item
+        relationships: item.relationships, // Mantém o objeto de relacionamentos
+      }));
       
-      // 4. Extraia os dados de paginação dos cabeçalhos da resposta
+      setGames(formattedGames);
+      setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
 
@@ -35,7 +44,7 @@ const PlinkoGamesPage: React.FC = () => {
 
   useEffect(() => {
     fetchGames(currentPage);
-  }, [currentPage]); // O useEffect agora depende da página atual
+  }, [currentPage]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -47,7 +56,6 @@ const PlinkoGamesPage: React.FC = () => {
       <div className="bg-gray-800 shadow sm:rounded-lg">
         <PlinkoGameList games={games} loading={loading} included={included} />
       </div>
-      {/* 5. Renderize os controles de paginação */}
       <PaginationControls 
         currentPage={currentPage}
         totalPages={totalPages}
