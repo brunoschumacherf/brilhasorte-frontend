@@ -8,17 +8,22 @@ import { toast } from 'react-toastify';
 const UserList: React.FC = () => {
   const [users, setUsers] = useState<AdminUserListItem[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetches data for the specified page
+  // Busca os dados da página especificada
   const fetchUsers = async (page: number) => {
     setLoading(true);
     try {
       const response = await getAdminUserList(page);
-      setUsers(response.data.data);
+      
+      // Corrigido: Mapeia a resposta para a estrutura de dados correta e "plana"
+      const formattedUsers: AdminUserListItem[] = response.data.data.map(item => ({
+        ...item.attributes, // Espalha os atributos como email, nome, etc.
+        id: parseInt(item.id, 10), // Usa o ID principal, convertendo-o para número
+      }));
+
+      setUsers(formattedUsers);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
     } catch (error) {
@@ -59,27 +64,24 @@ const UserList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {loading ? <TableSkeleton cols={4} /> : users.map((item) => {
-                const user = item.attributes; // Access attributes for data
-                return (
-                  <tr key={item.id} className="hover:bg-gray-700">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-200">{user.full_name || 'N/A'}</div>
-                      <div className="text-sm text-gray-400">{user.email}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-400">
-                      {formatBalance(user.balance_in_cents)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                      <div>Jogos: {user.games_count}</div>
-                      <div>Depósitos: {user.deposits_count}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                      {new Date(user.created_at).toLocaleDateString('pt-BR')}
-                    </td>
-                  </tr>
-                );
-              })}
+              {loading ? <TableSkeleton cols={4} /> : users.map((user) => (
+                <tr key={user.id} className="hover:bg-gray-700">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="text-sm font-medium text-gray-200">{user.full_name || 'N/A'}</div>
+                    <div className="text-sm text-gray-400">{user.email}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-400">
+                    {formatBalance(user.balance_in_cents)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                    <div>Jogos: {user.games_count}</div>
+                    <div>Depósitos: {user.deposits_count}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
+                    {new Date(user.created_at).toLocaleDateString('pt-BR')}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

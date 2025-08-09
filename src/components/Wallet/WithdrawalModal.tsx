@@ -11,7 +11,7 @@ interface WithdrawalModalProps {
   onSuccess: () => void;
 }
 
-const WithdrawalModal: React.FC<WithdrawalModalProps> = ({ isOpen, onClose, onSuccess }) => {
+const WithdrawalModal: React.FC<WithdrawalModalProps> = ({ isOpen, onClose }) => {
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<WithdrawalRequest>();
 
   const onSubmit: SubmitHandler<WithdrawalRequest> = async (data) => {

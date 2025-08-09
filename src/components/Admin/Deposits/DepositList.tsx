@@ -5,8 +5,13 @@ import TableSkeleton from '../../Shared/TableSkeleton';
 import PaginationControls from '../../Shared/PaginationControls';
 import { toast } from 'react-toastify';
 
+// This new type represents the actual shape of the data we'll use in the component's state.
+type ProcessedDeposit = AdminDepositListItem & {
+  relationships: any;
+};
+
 const DepositList: React.FC = () => {
-  const [deposits, setDeposits] = useState<AdminDepositListItem[]>([]);
+  const [deposits, setDeposits] = useState<ProcessedDeposit[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +24,15 @@ const DepositList: React.FC = () => {
     setLoading(true);
     try {
       const response = await getAdminDepositList(page);
-      setDeposits(response.data.data);
+      
+      // We map the API response to a flatter, easier-to-use structure.
+      const formattedDeposits: ProcessedDeposit[] = response.data.data.map(item => ({
+        ...item.attributes, // Spread all the attributes like amount, status, etc.
+        id: parseInt(item.id, 10), // Use the main ID, converting it to a number.
+        relationships: item.relationships, // Keep the relationships for user data.
+      }));
+
+      setDeposits(formattedDeposits);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
@@ -76,18 +89,17 @@ const DepositList: React.FC = () => {
             </thead>
             <tbody className="bg-gray-800 divide-y divide-gray-700">
               {loading ? <TableSkeleton cols={5} /> : deposits.map((deposit) => {
-                const { attributes, relationships } = deposit;
-                const statusInfo = getStatusInfo(attributes.status);
+                const statusInfo = getStatusInfo(deposit.status);
                 return (
                   <tr key={deposit.id} className="hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {findUserEmail(relationships.user)}
+                      {findUserEmail(deposit.relationships.user)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-400">
-                      {formatCurrency(attributes.amount_in_cents)}
+                      {formatCurrency(deposit.amount_in_cents)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-yellow-400">
-                      {formatCurrency(attributes.bonus_in_cents)}
+                      {formatCurrency(deposit.bonus_in_cents)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.className}`}>
@@ -95,7 +107,7 @@ const DepositList: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                      {new Date(attributes.created_at).toLocaleString('pt-BR')}
+                      {new Date(deposit.created_at).toLocaleString('pt-BR')}
                     </td>
                   </tr>
                 );

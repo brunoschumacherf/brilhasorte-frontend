@@ -2,28 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getAdminTickets } from '../../../services/api';
-import type { Ticket } from '../../../types'; // Usaremos a interface Ticket como base
- // Usaremos a interface Ticket como base
+import type { Ticket } from '../../../types';
 import PaginationControls from '../../Shared/PaginationControls';
 import TableSkeleton from '../../Shared/TableSkeleton';
 
-// Interface para o item de ticket no formato que a API retorna
-interface AdminTicketListItem {
-  id: string;
-  type: 'ticket';
-  attributes: Ticket; // Os atributos correspondem à interface Ticket
-  relationships: {
-    user: {
-      data: {
-        id: string;
-        type: 'user';
-      }
-    }
-  }
-}
+// Tipo para os dados processados que serão usados no estado do componente
+type ProcessedTicket = Ticket & {
+  relationships: any; // Mantemos os relacionamentos para encontrar o usuário
+};
 
 const TicketList: React.FC = () => {
-  const [tickets, setTickets] = useState<AdminTicketListItem[]>([]);
+  const [tickets, setTickets] = useState<ProcessedTicket[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,7 +24,15 @@ const TicketList: React.FC = () => {
     setLoading(true);
     try {
       const response = await getAdminTickets(page);
-      setTickets(response.data.data);
+      
+      // Corrigido: Mapeia a resposta para a estrutura de dados correta e "plana"
+      const formattedTickets: ProcessedTicket[] = response.data.data.map(item => ({
+        ...item.attributes, // Espalha os atributos como subject, status, etc.
+        id: parseInt(item.id, 10), // Usa o ID principal, convertendo para número
+        relationships: item.relationships, // Mantém o objeto de relacionamentos
+      }));
+
+      setTickets(formattedTickets);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
@@ -92,22 +89,22 @@ const TicketList: React.FC = () => {
             </thead>
             <tbody className="bg-gray-800 divide-y divide-gray-700">
               {loading ? <TableSkeleton cols={5} /> : tickets.map((ticket) => {
-                const statusInfo = getStatusInfo(ticket.attributes.status);
+                const statusInfo = getStatusInfo(ticket.status);
                 return (
                   <tr
                     key={ticket.id}
                     className="hover:bg-gray-700 cursor-pointer"
-                    onClick={() => navigate(`/admin/support/${ticket.attributes.ticket_number}`)}
+                    onClick={() => navigate(`/admin/support/${ticket.ticket_number}`)}
                   >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-blue-400">{ticket.attributes.ticket_number}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-blue-400">{ticket.ticket_number}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(ticket.relationships.user.data.id)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">{ticket.attributes.subject}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">{ticket.subject}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.className}`}>
                         {statusInfo.label}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{new Date(ticket.attributes.created_at).toLocaleString('pt-BR')}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{new Date(ticket.created_at).toLocaleString('pt-BR')}</td>
                   </tr>
                 );
               })}

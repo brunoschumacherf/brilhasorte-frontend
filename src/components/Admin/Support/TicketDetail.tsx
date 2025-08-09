@@ -2,12 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getAdminTicketDetails, createAdminTicketReply } from '../../../services/api';
 import type { Ticket, TicketReply, User } from '../../../types';
-import { useAuth } from '../../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 
 const TicketDetail: React.FC = () => {
   const { ticketNumber } = useParams<{ ticketNumber: string }>();
-  const { user: adminUser } = useAuth();
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [ticketUser, setTicketUser] = useState<User | null>(null);
   const [replies, setReplies] = useState<TicketReply[]>([]);

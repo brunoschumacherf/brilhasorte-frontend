@@ -21,7 +21,12 @@ const BonusCodeList: React.FC = () => {
     setLoading(true);
     try {
       const response = await getAdminBonusCodeList(page);
-      setBonusCodes(response.data.data);
+      // Correctly map the response to get the attributes and parse the ID
+      const codes = response.data.data.map(item => ({
+        ...item.attributes,
+        id: parseInt(item.id, 10) // Convert string ID to number
+      }));
+      setBonusCodes(codes);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
     } catch (error) {
@@ -46,7 +51,6 @@ const BonusCodeList: React.FC = () => {
   };
 
   const handleEdit = (code: AdminBonusCode) => {
-    // We pass the full object including attributes to the form
     setSelectedCode(code);
     setIsModalOpen(true);
   };
@@ -86,10 +90,9 @@ const BonusCodeList: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {loading ? <TableSkeleton cols={6} /> : bonusCodes.map((item) => {
-                const code = item.attributes; // Access attributes for data
+              {loading ? <TableSkeleton cols={6} /> : bonusCodes.map((code) => {
                 return (
-                  <tr key={item.id} className="hover:bg-gray-700">
+                  <tr key={code.id} className="hover:bg-gray-700">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-mono font-bold text-gray-200">{code.code}</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{(code.bonus_percentage * 100).toFixed(0)}%</td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{formatUses(code.uses_count, code.max_uses)}</td>
@@ -102,7 +105,7 @@ const BonusCodeList: React.FC = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button onClick={() => handleEdit(item)} className="text-indigo-400 hover:text-indigo-300">
+                      <button onClick={() => handleEdit(code)} className="text-indigo-400 hover:text-indigo-300">
                         Editar
                       </button>
                     </td>

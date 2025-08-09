@@ -1,21 +1,21 @@
 import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import Modal from '../../Shared/Modal';
 import type { AdminBonusCode } from '../../../types';
 import { createAdminBonusCode, updateAdminBonusCode } from '../../../services/api';
 import { toast } from 'react-toastify';
+import z from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-// Esquema de validação com Zod
+// Zod schema for form validation
 const bonusCodeSchema = z.object({
   code: z.string().min(3, "O código deve ter no mínimo 3 caracteres").toUpperCase(),
   bonus_percentage: z.preprocess(
-    (val) => Number(String(val)),
+    (val: any) => Number(String(val)),
     z.number().min(0.01, "A porcentagem deve ser maior que 0").max(1, "A porcentagem não pode ser maior que 1 (100%)")
   ),
   max_uses: z.preprocess(
-    (val) => Number(String(val)),
+    (val: any) => Number(String(val)),
     z.number().int("O número de usos deve ser inteiro")
   ),
   expires_at: z.string().optional().nullable(),
@@ -58,7 +58,7 @@ const BonusCodeForm: React.FC<BonusCodeFormProps> = ({ isOpen, onClose, onSave, 
         ? await updateAdminBonusCode(existingBonusCode.id, data)
         : await createAdminBonusCode(data);
       toast.success(`Código de bônus ${existingBonusCode ? 'atualizado' : 'criado'} com sucesso!`);
-      onSave(response.data.data.attributes);
+      onSave(response.data.data.attributes); // Adjusted to pass the correct data structure
     } catch (err: any) {
       toast.error(err.response?.data?.errors?.join(', ') || 'Ocorreu um erro.');
     }

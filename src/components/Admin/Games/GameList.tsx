@@ -5,8 +5,13 @@ import TableSkeleton from '../../Shared/TableSkeleton';
 import PaginationControls from '../../Shared/PaginationControls';
 import { toast } from 'react-toastify';
 
+// This new type represents the actual shape of the data we'll use in the component's state.
+type ProcessedGame = AdminGameListItem & {
+  relationships: any;
+};
+
 const GameList: React.FC = () => {
-  const [games, setGames] = useState<AdminGameListItem[]>([]);
+  const [games, setGames] = useState<ProcessedGame[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,7 +24,15 @@ const GameList: React.FC = () => {
     setLoading(true);
     try {
       const response = await getAdminGameList(page);
-      setGames(response.data.data);
+
+      // We map the API response to a flatter, easier-to-use structure.
+      const formattedGames: ProcessedGame[] = response.data.data.map(item => ({
+        ...item.attributes, // Spread all the attributes like status, winnings, etc.
+        id: parseInt(item.id, 10), // Use the main ID, converting it to a number.
+        relationships: item.relationships, // Keep the relationships for user, prize, etc.
+      }));
+
+      setGames(formattedGames);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
@@ -85,11 +98,11 @@ const GameList: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
                       {prize.name}
                     </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${game.attributes.winnings_in_cents > 0 ? 'text-green-400' : 'text-gray-400'}`}>
-                      {formatWinnings(game.attributes.winnings_in_cents)}
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${game.winnings_in_cents > 0 ? 'text-green-400' : 'text-gray-400'}`}>
+                      {formatWinnings(game.winnings_in_cents)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                      {new Date(game.attributes.created_at).toLocaleString('pt-BR')}
+                      {new Date(game.created_at).toLocaleString('pt-BR')}
                     </td>
                   </tr>
                 );

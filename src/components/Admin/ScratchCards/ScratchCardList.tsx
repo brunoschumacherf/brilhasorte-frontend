@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getAdminScratchCardList, getAdminScratchCardDetails } from '../../../services/api';
-import type { AdminScratchCard } from '../../../types';
+import type { AdminScratchCard, JsonApiData, AdminPrize } from '../../../types';
 import ScratchCardForm from './ScratchCardForm';
 import TableSkeleton from '../../Shared/TableSkeleton';
 import PaginationControls from '../../Shared/PaginationControls';
 import { toast } from 'react-toastify';
+
+// Tipo auxiliar para identificar recursos em relacionamentos JSON:API
+type ResourceIdentifier = { id: string; type: string };
 
 const ScratchCardList: React.FC = () => {
   const [scratchCards, setScratchCards] = useState<AdminScratchCard[]>([]);
@@ -12,18 +15,18 @@ const ScratchCardList: React.FC = () => {
   const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<AdminScratchCard | null>(null);
-
-  // Estados para a paginação
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Função para buscar os dados com paginação
-  const fetchScratchCards = async (page: number) => {
+  const fetchScratchCards = useCallback(async (page: number) => {
     setLoading(true);
     try {
       const response = await getAdminScratchCardList(page);
-      // O formato da API já é o correto, não precisa de map
-      setScratchCards(response.data.data);
+      const cards = response.data.data.map(item => ({
+        ...item.attributes,
+        id: parseInt(item.id, 10)
+      }));
+      setScratchCards(cards);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
     } catch (error) {
@@ -31,11 +34,11 @@ const ScratchCardList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchScratchCards(currentPage);
-  }, [currentPage]);
+  }, [currentPage, fetchScratchCards]);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
@@ -44,26 +47,28 @@ const ScratchCardList: React.FC = () => {
   const handleSave = () => {
     setIsModalOpen(false);
     setSelectedCard(null);
-    // Recarrega a página atual para refletir as mudanças
     fetchScratchCards(currentPage);
   };
 
   const handleEdit = async (card: AdminScratchCard) => {
     setIsDetailLoading(true);
-    setSelectedCard(card); // Seleciona o card para mostrar o feedback de loading
+    setSelectedCard(card);
     try {
-      const response = await getAdminScratchCardDetails(parseInt(card.id));
-      const includedData = response.data.included || [];
-      const fullCardData = {
+      const response = await getAdminScratchCardDetails(card.id);
+      const includedData: JsonApiData<any>[] = response.data.included || [];
+      
+      const fullCardData: AdminScratchCard = {
         ...response.data.data.attributes,
-        id: parseInt(response.data.data.id),
+        id: parseInt(response.data.data.id, 10),
         prizes: (response.data.data.relationships?.prizes?.data || [])
-          .map((pRel: any) => {
+          .map((pRel: ResourceIdentifier) => {
             const prizeData = includedData.find(inc => inc.id === pRel.id && inc.type === 'prize');
-            return prizeData ? { ...prizeData.attributes, id: parseInt(prizeData.id) } : null;
+            if (!prizeData) return null;
+            return { ...prizeData.attributes, id: parseInt(prizeData.id, 10) };
           })
-          .filter(Boolean),
+          .filter((p: any): p is AdminPrize => p !== null),
       };
+
       setSelectedCard(fullCardData);
       setIsModalOpen(true);
     } catch {
@@ -105,11 +110,11 @@ const ScratchCardList: React.FC = () => {
             <tbody className="bg-gray-800 divide-y divide-gray-700">
               {loading ? <TableSkeleton cols={4} /> : scratchCards.map((card) => (
                 <tr key={card.id} className="hover:bg-gray-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">{card.attributes.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatPrice(card.attributes.price_in_cents)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">{card.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatPrice(card.price_in_cents)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${card.attributes.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {card.attributes.is_active ? 'Ativa' : 'Inativa'}
+                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${card.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                      {card.is_active ? 'Ativa' : 'Inativa'}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
