@@ -4,7 +4,6 @@ import Navbar from './Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 import { getProfile } from '../../services/api';
 import Footer from './Footer';
-import { toast } from 'react-toastify';
 
 const UserLayout: React.FC = () => {
   const { updateUserDetails, isAuthenticated } = useAuth();

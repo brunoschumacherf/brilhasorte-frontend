@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getGameHistory } from '../../services/api';
-import type { JsonApiData, GameHistoryItem } from '../../types';
+import type { GameHistoryItem } from '../../types';
 
 // O tipo combinado para facilitar o uso
 type CombinedGameHistoryItem = GameHistoryItem & {
