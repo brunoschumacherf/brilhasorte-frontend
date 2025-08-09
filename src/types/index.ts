@@ -13,6 +13,7 @@ export interface User {
 }
 
 export interface AdminUserListItem {
+    attributes: any;
     id: number;
     email: string;
     full_name: string | null;
@@ -36,6 +37,7 @@ export interface AdminDepositListItem {
 }
 
 export interface AdminWithdrawalListItem {
+  attributes: any;
   id: number;
   amount_in_cents: number;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -50,6 +52,8 @@ export interface AdminWithdrawalListItem {
 }
 
 export interface AdminGameListItem {
+  attributes: any;
+  relationships: any;
   id: number;
   status: 'pending' | 'finished';
   winnings_in_cents: number;
@@ -69,6 +73,7 @@ export interface AdminGameListItem {
 }
 
 export interface AdminBonusCode {
+  attributes: any;
   id: number;
   code: string;
   bonus_percentage: number;
@@ -90,6 +95,7 @@ export interface AdminPrize {
 }
 
 export interface AdminScratchCard {
+  attributes: any;
   id: number;
   name: string;
   price_in_cents: number;

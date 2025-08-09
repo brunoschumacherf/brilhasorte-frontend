@@ -44,7 +44,7 @@ const PlinkoGameList: React.FC<PlinkoGameListProps> = ({ games, loading, include
             </tr>
           </thead>
           <tbody className="bg-gray-800 divide-y divide-gray-700">
-            {loading ? <TableSkeleton columns={7} /> : games.map((game) => (
+            {loading ? <TableSkeleton cols={7} /> : games.map((game) => (
               <tr key={game.id} className="hover:bg-gray-700">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(game.relationships.user.data.id)}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatBalance(game.attributes.bet_amount)}</td>
