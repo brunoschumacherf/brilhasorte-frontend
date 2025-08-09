@@ -1,9 +1,10 @@
 import React from 'react';
-import type { AdminMinesGameListItem } from '../../../types';
+import type { AdminMinesGameListItem, JsonApiData } from '../../../types';
 import TableSkeleton from '../../Shared/TableSkeleton';
 
 interface MinesGameListProps {
-  games: AdminMinesGameListItem[];
+  // A prop 'games' agora espera o formato da API
+  games: JsonApiData<AdminMinesGameListItem>[];
   loading: boolean;
   included: any[];
 }
@@ -50,6 +51,7 @@ const MinesGameList: React.FC<MinesGameListProps> = ({ games, loading, included 
         </thead>
         <tbody className="bg-gray-800 divide-y divide-gray-700">
           {loading ? <TableSkeleton cols={6} /> : games.map((game) => (
+            // Corrigido: Acessa os dados através de 'game.attributes'
             <tr key={game.id} className="hover:bg-gray-700">
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(game.relationships.user)}</td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{formatBalance(game.attributes.bet_amount)}</td>
@@ -59,7 +61,7 @@ const MinesGameList: React.FC<MinesGameListProps> = ({ games, loading, included 
               <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{new Date(game.attributes.created_at).toLocaleString('pt-BR')}</td>
             </tr>
           ))}
-        </tbody>''
+        </tbody>
       </table>
     </div>
   );

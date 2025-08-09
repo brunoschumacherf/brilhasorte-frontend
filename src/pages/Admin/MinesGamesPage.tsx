@@ -3,34 +3,22 @@ import { toast } from 'react-toastify';
 import { getAdminMinesGameList } from '../../services/api';
 import MinesGameList from '../../components/Admin/Mines/MinesGameList';
 import PaginationControls from '../../components/Shared/PaginationControls';
-import type { AdminMinesGameListItem } from '../../types';
-
-// Tipo para os dados processados que serão usados no estado do componente
-type ProcessedMinesGame = AdminMinesGameListItem & {
-  relationships: any;
-};
+import type { JsonApiData, AdminMinesGameListItem } from '../../types';
 
 const MinesGamesPage: React.FC = () => {
-  const [games, setGames] = useState<ProcessedMinesGame[]>([]);
+  // O estado agora armazena a estrutura de dados completa da API
+  const [games, setGames] = useState<JsonApiData<AdminMinesGameListItem>[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Busca os dados da página especificada
   const fetchGames = async (page: number) => {
     setLoading(true);
     try {
       const response = await getAdminMinesGameList(page);
-      
-      // Corrigido: Mapeia a resposta da API para a estrutura de dados correta e "plana"
-      const formattedGames: ProcessedMinesGame[] = response.data.data.map(item => ({
-        ...item.attributes, // Espalha os atributos como bet_amount, state, etc.
-        id: item.id,       // Usa o ID principal do item
-        relationships: item.relationships, // Mantém o objeto de relacionamentos
-      }));
-
-      setGames(formattedGames);
+      // Corrigido: Define o estado diretamente com os dados da API, sem mapeamento
+      setGames(response.data.data);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
