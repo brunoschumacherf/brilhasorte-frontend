@@ -250,7 +250,6 @@ export interface MinesGame {
 
 export interface AdminMinesGameListItem {
   attributes: any;
-  attributes: any;
   relationships: any;
   id: string;
   bet_amount: number;
@@ -267,4 +266,15 @@ export interface AdminMinesGameListItem {
       }
     }
   }
+}
+
+export interface PlinkoGame {
+  id: number;
+  bet_amount: number;
+  rows: number;
+  risk: 'low' | 'medium' | 'high';
+  path: ('L' | 'R')[];
+  multiplier: string;
+  winnings: number;
+  created_at: string;
 }

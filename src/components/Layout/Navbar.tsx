@@ -12,7 +12,7 @@ const gameNavItems = [
   { label: 'Raspadinha', to: '/games' },
   { label: 'Mines', to: '/mines' },
   { label: 'Double', to: '/games' },
-  { label: 'Plinko', to: '/games' },
+  { label: 'Plinko', to: '/plinko' },
 ];
 
 // 2. Links para o menu "Minha Conta"

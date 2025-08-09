@@ -22,7 +22,8 @@ import type {
   Ticket,
   TicketReply,
   MinesGame,
-  AdminMinesGameListItem
+  AdminMinesGameListItem,
+  PlinkoGame
 } from '../types';
 
 const api = axios.create({
@@ -165,5 +166,23 @@ export const getActiveGame = (): Promise<{ data: MinesGame }> => {
 
 
 export const getAdminMinesGameList = () => api.get<JsonApiCollection<AdminMinesGameListItem>>('/api/v1/admin/mines_games');
+
+
+interface PlinkoPayload {
+  bet_amount: number;
+  rows: number;
+  risk: 'low' | 'medium' | 'high';
+}
+
+// Adicione esta função junto com as outras funções de jogos
+export const playPlinko = (data: PlinkoPayload): Promise<{ data: PlinkoGame }> => {
+  return api.post('/api/v1/plinko', data);
+};
+
+export const getPlinkoMultipliers = (): Promise<{ data: any }> => {
+  return api.get('/api/v1/plinko/multipliers');
+};
+
+
 
 export default api;
