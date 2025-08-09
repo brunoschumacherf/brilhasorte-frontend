@@ -3,16 +3,11 @@ import { toast } from 'react-toastify';
 import { getAdminPlinkoGameList } from '../../services/api';
 import PlinkoGameList from '../../components/Admin/Plinko/PlinkoGameList';
 import PaginationControls from '../../components/Shared/PaginationControls';
-import type { AdminPlinkoGameListItem } from '../../types';
-
-// Tipo para os dados processados que serão usados no estado do componente
-type ProcessedPlinkoGame = AdminPlinkoGameListItem['attributes'] & {
-  id: string;
-  relationships: any;
-};
+import type { JsonApiData, AdminPlinkoGameListItem } from '../../types';
 
 const PlinkoGamesPage: React.FC = () => {
-  const [games, setGames] = useState<ProcessedPlinkoGame[]>([]);
+  // O estado agora armazena a estrutura de dados completa da API
+  const [games, setGames] = useState<JsonApiData<AdminPlinkoGameListItem>[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,19 +17,11 @@ const PlinkoGamesPage: React.FC = () => {
     setLoading(true);
     try {
       const response = await getAdminPlinkoGameList(page);
-
-      // Corrigido: Mapeia a resposta para a estrutura de dados correta e "plana"
-      const formattedGames: ProcessedPlinkoGame[] = response.data.data.map(item => ({
-        ...item.attributes, // Espalha os atributos como bet_amount, risk, etc.
-        id: item.id,       // Usa o ID principal do item
-        relationships: item.relationships, // Mantém o objeto de relacionamentos
-      }));
-      
-      setGames(formattedGames);
+      // Define o estado diretamente com os dados da API, sem mapeamento
+      setGames(response.data.data);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
       setCurrentPage(parseInt(response.headers['current-page'] || '1'));
-
     } catch (error) {
       toast.error('Falha ao carregar o histórico de jogos do Plinko.');
     } finally {
@@ -56,7 +43,7 @@ const PlinkoGamesPage: React.FC = () => {
       <div className="bg-gray-800 shadow sm:rounded-lg">
         <PlinkoGameList games={games} loading={loading} included={included} />
       </div>
-      <PaginationControls 
+      <PaginationControls
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}

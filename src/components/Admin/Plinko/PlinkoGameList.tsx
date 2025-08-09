@@ -1,15 +1,10 @@
 import React from 'react';
-import type { AdminPlinkoGameListItem } from '../../../types';
+import type { AdminPlinkoGameListItem, JsonApiData } from '../../../types';
 import TableSkeleton from '../../Shared/TableSkeleton';
 
-// Tipo ajustado para refletir os dados processados que o componente recebe
-type ProcessedPlinkoGame = AdminPlinkoGameListItem['attributes'] & {
-  id: string;
-  relationships: any;
-};
-
 interface PlinkoGameListProps {
-  games: ProcessedPlinkoGame[];
+  // A prop 'games' agora espera o formato da API
+  games: JsonApiData<AdminPlinkoGameListItem>[];
   loading: boolean;
   included: any[];
 }
@@ -19,8 +14,9 @@ const PlinkoGameList: React.FC<PlinkoGameListProps> = ({ games, loading, include
     return (balanceInCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
-  const findUserEmail = (userId: string) => {
-    const user = included?.find(item => item.type === 'user' && item.id === userId);
+  const findUserEmail = (relationship: { data: { id: string; type: string } } | undefined) => {
+    if (!relationship?.data) return 'N/A';
+    const user = included?.find(item => item.type === 'user' && item.id === relationship.data.id);
     return user?.attributes?.email || 'N/A';
   };
 
@@ -52,13 +48,13 @@ const PlinkoGameList: React.FC<PlinkoGameListProps> = ({ games, loading, include
           <tbody className="bg-gray-800 divide-y divide-gray-700">
             {loading ? <TableSkeleton cols={7} /> : games.map((game) => (
               <tr key={game.id} className="hover:bg-gray-700">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(game.relationships.user.data.id)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatBalance(game.bet_amount)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-semibold">{formatBalance(game.winnings)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.rows}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{getRiskLabel(game.risk)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.multiplier}x</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{new Date(game.created_at).toLocaleString('pt-BR')}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(game.relationships.user)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatBalance(game.attributes.bet_amount)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-semibold">{formatBalance(game.attributes.winnings)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.attributes.rows}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">{getRiskLabel(game.attributes.risk)}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.attributes.multiplier}x</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{new Date(game.attributes.created_at).toLocaleString('pt-BR')}</td>
               </tr>
             ))}
           </tbody>

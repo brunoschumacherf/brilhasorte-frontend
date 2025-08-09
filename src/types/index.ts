@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 export interface User {
   id: number;
   email: string;
@@ -289,6 +291,12 @@ export interface PlinkoGame {
 }
 
 export interface AdminPlinkoGameListItem {
+  created_at: string | number | Date;
+  multiplier: ReactNode;
+  risk: string;
+  winnings: number;
+  bet_amount: number;
+  rows: ReactNode;
   id: string;
   type: 'plinko_game';
   attributes: {
