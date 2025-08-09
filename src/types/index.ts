@@ -157,6 +157,7 @@ export interface Referee {
 }
 
 export interface GameHistoryItem {
+  [x: string]: any;
   id: number;
   winnings_in_cents: number;
   created_at: string;

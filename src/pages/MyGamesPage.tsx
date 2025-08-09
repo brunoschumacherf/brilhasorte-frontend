@@ -35,6 +35,7 @@ const MyGamesPage: React.FC = () => {
           return {
             ...item.attributes,
             id: parseInt(item.id, 10),
+            status: item.attributes.status,
             prize: { name: prize?.attributes.name || 'N/A' },
             scratch_card: { name: scratchCard?.attributes.name || 'N/A' },
           };
