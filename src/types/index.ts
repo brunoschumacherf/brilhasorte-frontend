@@ -13,6 +13,7 @@ export interface User {
 }
 
 export interface AdminUserListItem {
+    attributes: any;
     id: number;
     email: string;
     full_name: string | null;
@@ -36,6 +37,7 @@ export interface AdminDepositListItem {
 }
 
 export interface AdminWithdrawalListItem {
+  attributes: any;
   id: number;
   amount_in_cents: number;
   status: 'pending' | 'processing' | 'completed' | 'failed';
@@ -50,6 +52,8 @@ export interface AdminWithdrawalListItem {
 }
 
 export interface AdminGameListItem {
+  attributes: any;
+  relationships: any;
   id: number;
   status: 'pending' | 'finished';
   winnings_in_cents: number;
@@ -69,6 +73,7 @@ export interface AdminGameListItem {
 }
 
 export interface AdminBonusCode {
+  attributes: any;
   id: number;
   code: string;
   bonus_percentage: number;
@@ -90,6 +95,7 @@ export interface AdminPrize {
 }
 
 export interface AdminScratchCard {
+  attributes: any;
   id: number;
   name: string;
   price_in_cents: number;
@@ -225,4 +231,77 @@ export interface TicketReply {
     admin: any;
     full_name: string;
   };
+}
+
+
+export interface RevealedTile {
+  row: number;
+  col: number;
+}
+
+export type TileValue = 'diamond' | 'mine';
+
+export interface MinesGame {
+  id: number;
+  bet_amount: number;
+  mines_count: number;
+  state: 'active' | 'busted' | 'cashed_out';
+  revealed_tiles: RevealedTile[];
+  payout_multiplier: string;
+  grid?: TileValue[][];
+  created_at: string;
+  updated_at: string;
+}
+
+
+export interface AdminMinesGameListItem {
+  attributes: any;
+  relationships: any;
+  id: string;
+  bet_amount: number;
+  mines_count: number;
+  state: 'active' | 'busted' | 'cashed_out';
+  payout_multiplier: string;
+  created_at: string;
+  user: {
+    data: {
+      id: string;
+      type: 'user';
+      attributes: {
+        email: string;
+      }
+    }
+  }
+}
+
+export interface PlinkoGame {
+  id: number;
+  bet_amount: number;
+  rows: number;
+  risk: 'low' | 'medium' | 'high';
+  path: ('L' | 'R')[];
+  multiplier: string;
+  winnings: number;
+  created_at: string;
+}
+
+export interface AdminPlinkoGameListItem {
+  id: string;
+  type: 'plinko_game';
+  attributes: {
+    bet_amount: number;
+    rows: number;
+    risk: 'low' | 'medium' | 'high';
+    multiplier: string;
+    winnings: number;
+    created_at: string;
+  };
+  relationships: {
+    user: {
+      data: {
+        id: string;
+        type: 'user';
+      }
+    }
+  }
 }

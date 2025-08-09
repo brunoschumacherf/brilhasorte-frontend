@@ -10,9 +10,9 @@ import { Menu, X, ChevronDown, User, Gamepad2 } from 'lucide-react';
 // 1. Links para o novo menu "Jogo"
 const gameNavItems = [
   { label: 'Raspadinha', to: '/games' },
-  { label: 'Mines', to: '/games' },
+  { label: 'Mines', to: '/mines' },
   { label: 'Double', to: '/games' },
-  { label: 'Plinko', to: '/games' },
+  { label: 'Plinko', to: '/plinko' },
 ];
 
 // 2. Links para o menu "Minha Conta"
