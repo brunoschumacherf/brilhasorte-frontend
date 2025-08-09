@@ -11,6 +11,7 @@ const BonusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w
 const ScratchCardIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 012-2h3a2 2 0 012 2v14a2 2 0 01-2 2H7a2 2 0 01-2-2V5z" /></svg>;
 const SupportIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M18.364 5.636l-3.536 3.536m0 0a5 5 0 10-7.07 7.071 5 5 0 007.07-7.071zm-4.95-4.95a7 7 0 10-9.9 9.9 7 7 0 009.9-9.9z" /></svg>;
 const MinesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9V7a2 2 0 114 0v2m-4 0a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1-4h6a1 1 0 011 1v6a1 1 0 01-1 1h-6a1 1 0 01-1-1V6a1 1 0 011-1z" /></svg>;
+const PlinkoIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 2l1.5 3.09L17 6l-2.5 2.91L15 12l-3-1.5L9 12l.5-3.09L7 6l3.5-.91L12 2zM4 18h16a2 2 0 012 2v2a2 2 0 01-2 2H4a2 2 0 01-2-2v-2a2 2 0 012-2z" /></svg>;
 
 const AdminLayout: React.FC = () => {
   const location = useLocation();
@@ -25,6 +26,7 @@ const AdminLayout: React.FC = () => {
       case 'bonus-codes': return 'Códigos de Bônus';
       case 'scratch-cards': return 'Raspadinhas';
       case 'mines-games': return 'Jogos Mines';
+      case 'plinko-games': return 'Jogos Plinko';
       default: return 'Admin';
     }
   };
@@ -50,6 +52,7 @@ const AdminLayout: React.FC = () => {
           <NavLink to="/admin/scratch-cards" className={navLinkClasses}><ScratchCardIcon />Raspadinhas</NavLink>
           <NavLink to="/admin/support" className={navLinkClasses}><SupportIcon />Suporte</NavLink>
           <NavLink to="/admin/mines-games" className={navLinkClasses}><MinesIcon />Jogos Mines</NavLink>
+          <NavLink to="/admin/plinko-games" className={navLinkClasses}><PlinkoIcon />Jogos Plinko</NavLink>
         </nav>
         <div className="p-4 border-t border-gray-700">
           <NavLink to="/games" className="text-sm text-gray-400 hover:text-white transition-colors">

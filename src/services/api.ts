@@ -23,7 +23,8 @@ import type {
   TicketReply,
   MinesGame,
   AdminMinesGameListItem,
-  PlinkoGame
+  PlinkoGame,
+  AdminPlinkoGameListItem
 } from '../types';
 
 const api = axios.create({
@@ -183,6 +184,6 @@ export const getPlinkoMultipliers = (): Promise<{ data: any }> => {
   return api.get('/api/v1/plinko/multipliers');
 };
 
-
+export const getAdminPlinkoGameList = () => api.get<JsonApiCollection<AdminPlinkoGameListItem>>('/api/v1/admin/plinko_games');
 
 export default api;

@@ -34,6 +34,8 @@ import AdminSupportDetailPage from './pages/Admin/SupportDetailPage'; // Criar e
 import MinesPage from './pages/MinesPage'; // 1. Importe a nova página
 import MinesGamesPage from './pages/Admin/MinesGamesPage'; // 1. Importe a nova página
 import PlinkoPage from './pages/PlinkoPage'; // 1. Importe a nova página
+import PlinkoGamesPage from './pages/Admin/PlinkoGamesPage'; // 1. Importe a página
+
 
 
 
@@ -77,6 +79,7 @@ function App() {
             <Route path="deposits" element={<DepositsPage />} />
             <Route path="withdrawals" element={<WithdrawalsPage />} />
             <Route path="games" element={<AdminGamesPage />} />
+            <Route path="plinko-games" element={<PlinkoGamesPage />} />
             <Route path="mines-games" element={<MinesGamesPage />} />
             <Route path="bonus-codes" element={<BonusCodesPage />} />
             <Route path="scratch-cards" element={<ScratchCardsPage />} />

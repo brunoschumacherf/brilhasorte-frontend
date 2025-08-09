@@ -278,3 +278,24 @@ export interface PlinkoGame {
   winnings: number;
   created_at: string;
 }
+
+export interface AdminPlinkoGameListItem {
+  id: string;
+  type: 'plinko_game';
+  attributes: {
+    bet_amount: number;
+    rows: number;
+    risk: 'low' | 'medium' | 'high';
+    multiplier: string;
+    winnings: number;
+    created_at: string;
+  };
+  relationships: {
+    user: {
+      data: {
+        id: string;
+        type: 'user';
+      }
+    }
+  }
+}
