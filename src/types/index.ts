@@ -305,3 +305,7 @@ export interface AdminPlinkoGameListItem {
     }
   }
 }
+
+export interface WithdrawalRequest {
+  amount_in_cents: number;
+}
