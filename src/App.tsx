@@ -32,6 +32,8 @@ import TicketDetailPage from './pages/TicketDetailPage';
 import AdminSupportPage from './pages/Admin/SupportPage'; // Criar esta página
 import AdminSupportDetailPage from './pages/Admin/SupportDetailPage'; // Criar esta página
 import MinesPage from './pages/MinesPage'; // 1. Importe a nova página
+import MinesGamesPage from './pages/Admin/MinesGamesPage'; // 1. Importe a nova página
+
 
 
 
@@ -73,6 +75,7 @@ function App() {
             <Route path="deposits" element={<DepositsPage />} />
             <Route path="withdrawals" element={<WithdrawalsPage />} />
             <Route path="games" element={<AdminGamesPage />} />
+            <Route path="mines-games" element={<MinesGamesPage />} />
             <Route path="bonus-codes" element={<BonusCodesPage />} />
             <Route path="scratch-cards" element={<ScratchCardsPage />} />
             <Route path="support" element={<AdminSupportPage />} /> {/* Nova Rota */}

@@ -246,3 +246,25 @@ export interface MinesGame {
   created_at: string;
   updated_at: string;
 }
+
+
+export interface AdminMinesGameListItem {
+  attributes: any;
+  attributes: any;
+  relationships: any;
+  id: string;
+  bet_amount: number;
+  mines_count: number;
+  state: 'active' | 'busted' | 'cashed_out';
+  payout_multiplier: string;
+  created_at: string;
+  user: {
+    data: {
+      id: string;
+      type: 'user';
+      attributes: {
+        email: string;
+      }
+    }
+  }
+}

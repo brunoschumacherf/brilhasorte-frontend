@@ -21,7 +21,8 @@ import type {
   AdminScratchCard,
   Ticket,
   TicketReply,
-  MinesGame
+  MinesGame,
+  AdminMinesGameListItem
 } from '../types';
 
 const api = axios.create({
@@ -161,5 +162,8 @@ export const cashout = (): Promise<{ data: CashoutResponse }> => {
 export const getActiveGame = (): Promise<{ data: MinesGame }> => {
   return api.get('/api/v1/mines/active');
 };
+
+
+export const getAdminMinesGameList = () => api.get<JsonApiCollection<AdminMinesGameListItem>>('/api/v1/admin/mines_games');
 
 export default api;
