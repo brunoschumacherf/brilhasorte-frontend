@@ -31,6 +31,8 @@ import SupportPage from './pages/SupportPage';
 import TicketDetailPage from './pages/TicketDetailPage';
 import AdminSupportPage from './pages/Admin/SupportPage'; // Criar esta página
 import AdminSupportDetailPage from './pages/Admin/SupportDetailPage'; // Criar esta página
+import MinesPage from './pages/MinesPage'; // 1. Importe a nova página
+
 
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -52,6 +54,7 @@ function App() {
 
           <Route path="/" element={<PrivateRoute><UserLayout /></PrivateRoute>}>
             <Route index element={<Navigate to="/games" />} />
+            <Route path="/mines" element={<MinesPage />} /> {/* 2. Adicione a rota */}
             <Route path="games" element={<GamesPage />} />
             <Route path="my-games" element={<MyGamesPage />} />
             <Route path="games/:gameId" element={<GameRevealPage />} />

@@ -226,3 +226,23 @@ export interface TicketReply {
     full_name: string;
   };
 }
+
+
+export interface RevealedTile {
+  row: number;
+  col: number;
+}
+
+export type TileValue = 'diamond' | 'mine';
+
+export interface MinesGame {
+  id: number;
+  bet_amount: number;
+  mines_count: number;
+  state: 'active' | 'busted' | 'cashed_out';
+  revealed_tiles: RevealedTile[];
+  payout_multiplier: string;
+  grid?: TileValue[][];
+  created_at: string;
+  updated_at: string;
+}

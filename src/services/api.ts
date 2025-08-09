@@ -20,7 +20,8 @@ import type {
   AdminBonusCode,
   AdminScratchCard,
   Ticket,
-  TicketReply
+  TicketReply,
+  MinesGame
 } from '../types';
 
 const api = axios.create({
@@ -123,5 +124,42 @@ export const getAdminTickets = () => api.get<JsonApiCollection<Ticket>>('/api/v1
 export const getAdminTicketDetails = (ticketNumber: string) => api.get<JsonApiSingular<Ticket>>(`/api/v1/admin/tickets/${ticketNumber}`);
 export const createAdminTicketReply = (ticketNumber: string, message: string, close_ticket: boolean) => api.post<JsonApiSingular<TicketReply>>(`/api/v1/admin/tickets/${ticketNumber}/reply`, { reply: { message, close_ticket } });
 
+interface StartGamePayload {
+  bet_amount: number;
+  mines_count: number;
+}
+
+interface RevealTilePayload {
+  row: number;
+  col: number;
+}
+
+interface RevealResponse {
+  status: 'safe' | 'game_over';
+  game: MinesGame;
+}
+
+interface CashoutResponse {
+  status: 'cashed_out';
+  winnings: number;
+  game: MinesGame;
+}
+
+
+export const startGame = (data: StartGamePayload): Promise<{ data: MinesGame }> => {
+  return api.post('/api/v1/mines', data);
+};
+
+export const revealTile = (data: RevealTilePayload): Promise<{ data: RevealResponse }> => {
+  return api.post('/api/v1/mines/reveal', data);
+};
+
+export const cashout = (): Promise<{ data: CashoutResponse }> => {
+  return api.post('/api/v1/mines/cashout');
+};
+
+export const getActiveGame = (): Promise<{ data: MinesGame }> => {
+  return api.get('/api/v1/mines/active');
+};
 
 export default api;
