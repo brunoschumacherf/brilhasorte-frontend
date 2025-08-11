@@ -1,5 +1,3 @@
-// src/pages/MinesPage.tsx
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import MinesGrid from '../components/Mines/MinesGrid';
@@ -11,7 +9,7 @@ import axios from 'axios';
 
 const MinesPage: React.FC = () => {
   const [game, setGame] = useState<MinesGameAttributes | null>(null);
-  const [betAmount, setBetAmount] = useState(10);
+  const [betAmount, setBetAmount] = useState(1);
   const [minesCount, setMinesCount] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
   const [finalGrid, setFinalGrid] = useState<TileValue[][] | undefined>(undefined);
@@ -29,6 +27,8 @@ const MinesPage: React.FC = () => {
         setGame(gameData);
         setBetAmount(gameData.bet_amount / 100);
         setMinesCount(gameData.mines_count);
+      } else {
+        setGame(null);
       }
     } catch (error) {
       setGame(null);
@@ -36,7 +36,6 @@ const MinesPage: React.FC = () => {
       setIsLoading(false);
     }
   }, []);
-
 
   useEffect(() => {
     fetchActiveGame();
@@ -72,13 +71,11 @@ const MinesPage: React.FC = () => {
       setIsLoading(true);
       try {
         const response = await revealTile({ row, col });
-        
         const { status, payload } = response.data;
-        
         const updatedGameAttributes = payload.data.attributes;
         
         if (status === 'game_over') {
-          toast.error('Você acertou uma mina!');
+          toast.error('Você acertou numa mina!');
           setFinalGrid(updatedGameAttributes.grid_reveal);
         }
         setGame(updatedGameAttributes);
@@ -97,9 +94,9 @@ const MinesPage: React.FC = () => {
     try {
       const response = await cashout();
       const winningsInCents = response.data.winnings;
-      setFinalGrid(response.data.payload.data.attributes.grid_reveal)
+      setFinalGrid(response.data.payload.data.attributes.grid_reveal);
 
-      updateUserDetails({ balance_in_cents: user.balance_in_cents - game.bet_amount + winningsInCents });
+      updateUserDetails({ balance_in_cents: user.balance_in_cents + winningsInCents });
       
       toast.success(`Você ganhou R$ ${(winningsInCents / 100).toFixed(2)}!`);
       setGame(response.data.payload.data.attributes);
@@ -113,29 +110,34 @@ const MinesPage: React.FC = () => {
   };
   
   return (
-    <div className="container mx-auto p-4 text-white max-w-6xl">
-      <h1 className="text-3xl font-bold text-center mb-6 text-[var(--primary-gold)]">Mines</h1>
-      <div className="flex flex-col lg:flex-row gap-6 justify-center items-start">
-        <MinesControls
-          betAmount={betAmount}
-          setBetAmount={setBetAmount}
-          minesCount={minesCount}
-          setMinesCount={setMinesCount}
-          onStartGame={handleStartGame}
-          onCashout={handleCashout}
-          gameState={gameState}
-          isLoading={isLoading}
-          payout={game?.payout_multiplier || '1.00'}
-          nextPayout={game?.next_multiplier || game?.payout_multiplier || '1.00'}
-        />
-        <MinesGrid
-          onTileClick={handleTileClick}
-          revealedTiles={game?.revealed_tiles || []}
-          finalGrid={finalGrid}
-          gameState={gameState}
-          isLoading={isLoading}
-        />
-      </div>
+    <div className="relative min-h-screen bg-[#101010] p-4 sm:p-6 lg:p-8 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-cyan-500/10 rounded-full filter blur-3xl opacity-50 animate-blob"></div>
+        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-red-500/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+
+        <div className="container mx-auto max-w-6xl relative z-10">
+            <h1 className="text-3xl font-bold text-center mb-8 text-white">Mines</h1>
+            <div className="flex flex-col lg:flex-row gap-8 justify-center items-start">
+                <MinesControls
+                    betAmount={betAmount}
+                    setBetAmount={setBetAmount}
+                    minesCount={minesCount}
+                    setMinesCount={setMinesCount}
+                    onStartGame={handleStartGame}
+                    onCashout={handleCashout}
+                    gameState={gameState}
+                    isLoading={isLoading}
+                    payout={game?.payout_multiplier || '1.00'}
+                    nextPayout={game?.next_multiplier || game?.payout_multiplier || '1.00'}
+                />
+                <MinesGrid
+                    onTileClick={handleTileClick}
+                    revealedTiles={game?.revealed_tiles || []}
+                    finalGrid={finalGrid}
+                    gameState={gameState}
+                    isLoading={isLoading}
+                />
+            </div>
+        </div>
     </div>
   );
 };

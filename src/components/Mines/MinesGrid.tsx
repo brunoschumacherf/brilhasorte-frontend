@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Diamond, Bomb } from 'lucide-react';
 import type { RevealedTile, TileValue } from '../../types';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MinesGridProps {
   onTileClick: (row: number, col: number) => void;
@@ -12,40 +13,72 @@ interface MinesGridProps {
 
 const MinesGrid: React.FC<MinesGridProps> = ({ onTileClick, revealedTiles, finalGrid, gameState, isLoading }) => {
   const isGameOver = gameState === 'busted' || gameState === 'cashed_out';
+  
+  const explosionAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  const tileVariants = {
+    hidden: { scale: 0.5, opacity: 0 },
+    visible: { scale: 1, opacity: 1 },
+  };
+
+  useEffect(() => {
+    explosionAudioRef.current = new Audio('/sounds/explosion.mp3');
+    explosionAudioRef.current.preload = 'auto';
+  }, []);
+
+  useEffect(() => {
+    if (gameState === 'busted') {
+      explosionAudioRef.current?.play().catch(e => console.error("Erro ao tocar o som:", e));
+    }
+  }, [gameState]);
 
   return (
-    <div className="grid grid-cols-5 gap-1 sm:gap-2 p-2 sm:p-4 bg-black/20 rounded-lg w-full max-w-md mx-auto">
+    <div className="grid grid-cols-5 gap-2 p-4 bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl w-full max-w-lg mx-auto">
       {Array.from({ length: 25 }).map((_, index) => {
         const row = Math.floor(index / 5);
         const col = index % 5;
 
-        let content = null;
-        let tileClass = 'bg-gray-700 hover:bg-gray-600';
-        if (isGameOver && finalGrid) {
-          if (finalGrid[row][col] === 'diamond') {
-            tileClass = 'bg-green-500/20';
-            content = <Diamond className="w-1/2 h-1/2 text-cyan-400" />;
-          } else {
-            tileClass = 'bg-red-500/20';
-            content = <Bomb className="w-1/2 h-1/2 text-red-500" />;
-          }
-        } else if (revealedTiles.some(tile => tile.row === row && tile.col === col)) {
-          tileClass = 'bg-green-500/20';
-          content = <Diamond className="w-1/2 h-1/2 text-cyan-400" />;
-        }
-
         const revealed = revealedTiles.some(tile => tile.row === row && tile.col === col);
         const isDisabled = isGameOver || revealed || isLoading || gameState === 'idle';
 
+        let content = null;
+        let tileClass = 'bg-zinc-800/50 hover:bg-zinc-700/70';
+
+        if (isGameOver && finalGrid) {
+          if (finalGrid[row][col] === 'diamond') {
+            tileClass = 'bg-cyan-500/10';
+            content = <Diamond className="w-2/3 h-2/3 text-cyan-400" />;
+          } else {
+            tileClass = 'bg-red-500/10';
+            content = <Bomb className="w-2/3 h-2/3 text-red-500" />;
+          }
+        } else if (revealed) {
+          tileClass = 'bg-cyan-500/10';
+          content = <Diamond className="w-2/3 h-2/3 text-cyan-400" />;
+        }
+
         return (
-          <button
+          <motion.button
             key={index}
             onClick={() => onTileClick(row, col)}
             disabled={isDisabled}
-            className={`aspect-square rounded-md flex items-center justify-center transition-all duration-300 transform-gpu ${tileClass} disabled:cursor-not-allowed`}
+            className={`aspect-square rounded-lg flex items-center justify-center transition-colors duration-200 disabled:cursor-not-allowed ${tileClass}`}
+            whileHover={{ scale: isDisabled ? 1 : 1.05 }}
+            whileTap={{ scale: isDisabled ? 1 : 0.95 }}
           >
-            {content}
-          </button>
+            <AnimatePresence>
+              {content && (
+                <motion.div
+                  variants={tileVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="hidden"
+                >
+                  {content}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
         );
       })}
     </div>

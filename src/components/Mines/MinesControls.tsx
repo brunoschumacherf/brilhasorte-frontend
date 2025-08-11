@@ -1,6 +1,5 @@
-// src/components/Mines/MinesControls.tsx
-
 import React from 'react';
+import { motion } from 'framer-motion';
 
 interface MinesControlsProps {
   betAmount: number;
@@ -22,61 +21,81 @@ const MinesControls: React.FC<MinesControlsProps> = ({
   
   const handleBetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value === '' || !isNaN(parseFloat(value))) {
-      setBetAmount(parseFloat(value) || 0);
+    if (value === '') {
+        setBetAmount(0);
+    } else if (!isNaN(parseFloat(value))) {
+        setBetAmount(parseFloat(value));
     }
   };
 
   const isGameActive = gameState === 'active';
-  const isIdle = !isGameActive;
+  const isGameIdle = gameState === 'idle' || gameState === 'busted' || gameState === 'cashed_out';
   
   const potentialWinnings = (betAmount * parseFloat(payout)).toFixed(2);
 
   return (
-    <div className="w-full lg:w-96 p-4 bg-black/20 rounded-lg flex flex-col gap-4 text-white">
+    <div className="w-full lg:w-96 p-6 bg-black/30 backdrop-blur-md border border-white/10 rounded-2xl flex flex-col gap-6 text-white">
       <div>
-        <label className="block text-sm font-medium text-gray-300">Valor da Aposta (R$)</label>
-        <input
-          type="text"
-          step="0.01"
-          value={betAmount}
-          onChange={handleBetChange}
-          disabled={isGameActive || isLoading}
-          className="mt-1 w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm p-2 focus:ring-[var(--primary-gold)] focus:border-[var(--primary-gold)]"
-        />
+        <label className="block text-xs font-medium text-gray-400 mb-1">Valor da Aposta (R$)</label>
+        <div className="relative">
+            <input
+                type="number"
+                step="0.01"
+                value={betAmount === 0 ? '' : betAmount}
+                onChange={handleBetChange}
+                disabled={isGameActive || isLoading}
+                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg py-2 px-3 text-white transition-colors focus:border-yellow-500 focus:ring-yellow-500 focus:outline-none disabled:opacity-50"
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
+                <button onClick={() => setBetAmount(betAmount / 2)} disabled={isGameActive || isLoading} className="px-2 py-0.5 bg-white/5 rounded text-xs hover:bg-white/10 disabled:opacity-50">½</button>
+                <button onClick={() => setBetAmount(betAmount * 2)} disabled={isGameActive || isLoading} className="px-2 py-0.5 bg-white/5 rounded text-xs hover:bg-white/10 disabled:opacity-50">2x</button>
+            </div>
+        </div>
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-300">Número de Minas</label>
+        <label className="block text-xs font-medium text-gray-400 mb-1">Número de Minas ({minesCount})</label>
         <input
-          type="number"
+          type="range"
           value={minesCount}
           onChange={(e) => setMinesCount(parseInt(e.target.value))}
           disabled={isGameActive || isLoading}
           min="1"
           max="24"
-          className="mt-1 w-full bg-gray-700 border border-gray-600 rounded-md shadow-sm p-2 focus:ring-[var(--primary-gold)] focus:border-[var(--primary-gold)]"
+          className="w-full h-2 bg-zinc-700 rounded-lg appearance-none cursor-pointer range-lg accent-yellow-500 disabled:opacity-50"
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-center bg-gray-800/50 p-3 rounded-lg">
+      <div className="grid grid-cols-2 gap-4 text-center bg-black/20 p-4 rounded-lg">
         <div>
           <p className="text-xs text-gray-400">Próximo Multiplicador</p>
           <p className="text-xl font-bold text-cyan-400">{isGameActive ? `${nextPayout}x` : '-'}</p>
         </div>
         <div>
-          <p className="text-xs text-gray-400">Ganhos Potenciais</p>
+          <p className="text-xs text-gray-400">Ganhos Atuais</p>
           <p className="text-xl font-bold text-green-400">R$ {isGameActive ? potentialWinnings : '0.00'}</p>
         </div>
       </div>
 
-      {isIdle ? (
-        <button onClick={onStartGame} disabled={isLoading || betAmount <= 0} className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-md transition-all disabled:bg-gray-500 disabled:cursor-not-allowed">
-          {isLoading ? 'Iniciando...' : 'Começar Jogo'}
-        </button>
+      {isGameIdle ? (
+        <motion.button 
+            onClick={onStartGame} 
+            disabled={isLoading || betAmount <= 0} 
+            className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold py-3 rounded-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+        >
+          {isLoading ? 'A iniciar...' : 'Começar Jogo'}
+        </motion.button>
       ) : (
-        <button onClick={onCashout} disabled={isLoading} className="w-full bg-[var(--primary-gold)] hover:opacity-90 text-black font-bold py-3 rounded-md transition-all disabled:bg-gray-500">
-          {isLoading ? 'Processando...' : `Retirar R$ ${potentialWinnings}`}
-        </button>
+        <motion.button 
+            onClick={onCashout} 
+            disabled={isLoading} 
+            className="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold py-3 rounded-lg shadow-lg disabled:opacity-50"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+        >
+          {isLoading ? 'A processar...' : `Retirar R$ ${potentialWinnings}`}
+        </motion.button>
       )}
     </div>
   );
