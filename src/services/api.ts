@@ -1,4 +1,6 @@
 import axios from 'axios';
+import type { AxiosResponse } from 'axios'; 
+
 import type {
   User,
   ScratchCard,
@@ -24,7 +26,10 @@ import type {
   MinesGame,
   AdminMinesGameListItem,
   PlinkoGame,
-  AdminPlinkoGameListItem
+  AdminPlinkoGameListItem,
+  GameApiResponse,
+  RevealApiResponse,
+  CashoutApiResponse
 } from '../types';
 
 const api = axios.create({
@@ -87,10 +92,17 @@ interface RevealTilePayload { row: number; col: number; }
 interface RevealResponse { status: 'safe' | 'game_over'; game: MinesGame; }
 interface CashoutResponse { status: 'cashed_out'; winnings: number; game: MinesGame; }
 
-export const startGame = (data: StartGamePayload): Promise<{ data: MinesGame }> => api.post('/api/v1/mines', data);
-export const revealTile = (data: RevealTilePayload): Promise<{ data: RevealResponse }> => api.post('/api/v1/mines/reveal', data);
-export const cashout = (): Promise<{ data: CashoutResponse }> => api.post('/api/v1/mines/cashout');
-export const getActiveGame = (): Promise<{ data: MinesGame }> => api.get('/api/v1/mines/active');
+export const startGame = (data: StartGamePayload): Promise<AxiosResponse<GameApiResponse>> => 
+  api.post('/api/v1/mines', data);
+
+export const revealTile = (data: RevealTilePayload): Promise<AxiosResponse<RevealApiResponse>> => 
+  api.post('/api/v1/mines/reveal', data);
+
+export const cashout = (): Promise<AxiosResponse<CashoutApiResponse>> => 
+  api.post('/api/v1/mines/cashout');
+
+export const getActiveGame = (): Promise<AxiosResponse<GameApiResponse>> => 
+  api.get('/api/v1/mines/active');
 
 // --- Jogo Plinko ---
 interface PlinkoPayload { bet_amount: number; rows: number; risk: 'low' | 'medium' | 'high'; }

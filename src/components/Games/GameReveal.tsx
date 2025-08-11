@@ -17,7 +17,6 @@ const shuffleArray = (array: any[]) => {
   return newArray;
 };
 
-// Corrigido: 'id' agora é um número para corresponder ao tipo PrizeAttributes
 const DUMMY_PRIZES: PrizeAttributes[] = [
   { id: 999997, name: 'Tente de Novo', value_in_cents: 0, image_url: null, probability: 0 },
   { id: 999998, name: 'Que Pena', value_in_cents: 0, image_url: null, probability: 0 },
@@ -35,9 +34,11 @@ const GameReveal: React.FC = () => {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState('');
   
+  const [isGridReady, setIsGridReady] = useState(false);
+  
   const [wonPrize, setWonPrize] = useState<PrizeAttributes | null>(null);
   const [possiblePrizes, setPossiblePrizes] = useState<PrizeAttributes[]>([]);
-  const [gridPrizes, setGridPrizes] = useState<PrizeAttributes[]>([]);
+ const [gridPrizes, setGridPrizes] = useState<PrizeAttributes[]>([]);
   const [scratchCardTitle, setScratchCardTitle] = useState('');
   const [gameRules, setGameRules] = useState('');
   
@@ -51,6 +52,8 @@ const GameReveal: React.FC = () => {
         return;
       }
 
+
+      setIsGridReady(false);
       setIsLoading(true);
       setError('');
       try {
@@ -67,7 +70,6 @@ const GameReveal: React.FC = () => {
         if (!wonPrizeData) throw new Error("Prêmio do jogo não encontrado.");
         setWonPrize(wonPrizeData);
         
-        // Corrigido: Verifica se scratch_card_prize é um array antes de usá-lo
         const allPossiblePrizes = Array.isArray(game.scratch_card_prize) ? game.scratch_card_prize : [];
         setPossiblePrizes(allPossiblePrizes);
 
@@ -107,6 +109,15 @@ const GameReveal: React.FC = () => {
 
     fetchGameData();
   }, [gameId]);
+
+  useEffect(() => {
+    if (isPending && !isGridReady) {
+      const timer = setTimeout(() => {
+        setIsGridReady(true);
+      }, 50); // Delay de 50ms
+      return () => clearTimeout(timer);
+    }
+  }, [isPending, isGridReady]);
 
   useEffect(() => {
     if (isRevealed && wonPrize && wonPrize.value_in_cents > 0) {
@@ -222,7 +233,8 @@ const GameReveal: React.FC = () => {
               percentToFinish={40}
               onFinish={onScratchComplete}
             >
-              {renderScratchableGrid()}
+              {/* MUDANÇA: Renderização condicional do grid */}
+              {isGridReady && renderScratchableGrid()}
             </CustomScratchCard>
           </div>
           

@@ -244,18 +244,19 @@ export interface RevealedTile {
   col: number;
 }
 
-export type TileValue = 'diamond' | 'mine';
 
 export interface MinesGame {
+  data(data: any): unknown;
   id: number;
   bet_amount: number;
   mines_count: number;
   state: 'active' | 'busted' | 'cashed_out';
   revealed_tiles: RevealedTile[];
   payout_multiplier: string;
-  grid?: TileValue[][];
+  grid_reveal?: TileValue[][];
   created_at: string;
   updated_at: string;
+  next_multiplier: string;
 }
 
 
@@ -319,4 +320,62 @@ export interface AdminPlinkoGameListItem {
 
 export interface WithdrawalRequest {
   amount_in_cents: number;
+}
+
+
+export interface MinesGameAttributes {
+  id: number;
+  bet_amount: number;
+  mines_count: number;
+  state: 'active' | 'busted' | 'cashed_out' | 'idle';
+  payout_multiplier: string;
+  next_multiplier?: string;
+  revealed_tiles: RevealedTile[];
+  grid_reveal?: TileValue[][];
+  winnings?: number;
+}
+
+export interface RevealedTile {
+  row: number;
+  col: number;
+}
+
+export type TileValue = 'mine' | 'diamond';
+
+export interface ApiResponseData {
+  id: string;
+  type: string;
+  attributes: MinesGameAttributes;
+}
+
+export interface GameApiResponse {
+  data: ApiResponseData;
+}
+
+export interface RevealApiResponse {
+  status: 'safe' | 'game_over';
+  payload: JsonApiPayload<MinesGameAttributes>;
+}
+export interface JsonApiData<T> {
+  id: string;
+  type: string;
+  attributes: T;
+}
+
+export interface JsonApiPayload<T> {
+  data: JsonApiData<T>;
+}
+
+export interface MinesGamePayload {
+  data: {
+    id: string;
+    type: string;
+    attributes: MinesGameAttributes;
+  };
+}
+
+export interface CashoutApiResponse {
+  status: string;
+  winnings: number;
+  payload: MinesGamePayload;
 }
