@@ -37,7 +37,7 @@ const MinesControls: React.FC<MinesControlsProps> = ({
       <div>
         <label className="block text-sm font-medium text-gray-300">Valor da Aposta (R$)</label>
         <input
-          type="number"
+          type="text"
           step="0.01"
           value={betAmount}
           onChange={handleBetChange}

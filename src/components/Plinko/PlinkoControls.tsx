@@ -35,7 +35,7 @@ const PlinkoControls: React.FC<PlinkoControlsProps> = ({
       <div>
         <label className="block text-sm font-medium text-gray-300">Valor da Aposta (R$)</label>
         <input
-          type="number"
+          type="text"
           value={betAmount / 100}
           onChange={handleBetChange}
           disabled={isAnimating}
