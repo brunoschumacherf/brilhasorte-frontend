@@ -23,7 +23,6 @@ import type {
   AdminScratchCard,
   Ticket,
   TicketReply,
-  MinesGame,
   AdminMinesGameListItem,
   PlinkoGame,
   AdminPlinkoGameListItem,
@@ -89,8 +88,7 @@ export const createTicketReply = (ticketNumber: string, message: string) => api.
 // --- Jogo Mines ---
 interface StartGamePayload { bet_amount: number; mines_count: number; }
 interface RevealTilePayload { row: number; col: number; }
-interface RevealResponse { status: 'safe' | 'game_over'; game: MinesGame; }
-interface CashoutResponse { status: 'cashed_out'; winnings: number; game: MinesGame; }
+
 
 export const startGame = (data: StartGamePayload): Promise<AxiosResponse<GameApiResponse>> => 
   api.post('/api/v1/mines', data);

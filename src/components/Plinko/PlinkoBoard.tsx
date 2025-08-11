@@ -119,7 +119,7 @@ const PlinkoBoard: React.FC<PlinkoBoardProps> = ({ rows, balls, onAnimationCompl
             ball.pathIndex++;
             if (plinkAudioRef.current) {
                 plinkAudioRef.current.currentTime = 0;
-                plinkAudioRef.current.play().catch(e => {});
+                plinkAudioRef.current.play().catch();
             }
           }
         } else {
