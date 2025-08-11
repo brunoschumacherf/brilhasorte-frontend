@@ -1,60 +1,63 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/MinesPage.tsx
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { toast } from 'react-toastify';
 import MinesGrid from '../components/Mines/MinesGrid';
 import MinesControls from '../components/Mines/MinesControls';
 import { getActiveGame, startGame, revealTile, cashout } from '../services/api';
-import type { MinesGame, TileValue } from '../types';
+import type { MinesGameAttributes, TileValue } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import axios from 'axios';
 
 const MinesPage: React.FC = () => {
-  const [game, setGame] = useState<MinesGame | null>(null);
-  const [betAmount, setBetAmount] = useState(100);
+  const [game, setGame] = useState<MinesGameAttributes | null>(null);
+  const [betAmount, setBetAmount] = useState(10);
   const [minesCount, setMinesCount] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
   const [finalGrid, setFinalGrid] = useState<TileValue[][] | undefined>(undefined);
 
-  // 1. Obter o usuário e a função para atualizar os detalhes do usuário
   const { user, updateUserDetails } = useAuth();
-
   const gameState = game ? game.state : 'idle';
 
-  useEffect(() => {
-    const fetchActiveGame = async () => {
-      try {
-        setIsLoading(true);
-        const response = await getActiveGame();
-        if (response.data) {
-          setGame(response.data);
-          setBetAmount(response.data.bet_amount);
-          setMinesCount(response.data.mines_count);
-        }
-      } catch (error) {
-        setGame(null);
-      } finally {
-        setIsLoading(false);
+  const fetchActiveGame = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const response = await getActiveGame(); 
+      const gameData = response.data?.data?.attributes;
+
+      if (gameData) {
+        setGame(gameData);
+        setBetAmount(gameData.bet_amount / 100);
+        setMinesCount(gameData.mines_count);
       }
-    };
-    fetchActiveGame();
+    } catch (error) {
+      setGame(null);
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
+
+  useEffect(() => {
+    fetchActiveGame();
+  }, [fetchActiveGame]);
+
   const handleStartGame = async () => {
-    if (!user) return; // Impede o jogo se o usuário não estiver carregado
+    if (!user) return;
     
     setIsLoading(true);
     setFinalGrid(undefined);
 
     const originalBalance = user.balance_in_cents;
+    const betInCents = Math.round(betAmount * 100);
     
-    // 2. Atualização otimista: Debita o saldo na interface ANTES da chamada da API
-    updateUserDetails({ balance_in_cents: originalBalance - betAmount });
+    updateUserDetails({ balance_in_cents: originalBalance - betInCents });
 
     try {
-      const response = await startGame({ bet_amount: betAmount, mines_count: minesCount });
-      setGame(response.data);
+      const response = await startGame({ bet_amount: betInCents, mines_count: minesCount });
+      setGame(response.data.data.attributes);
       toast.success('Jogo iniciado! Boa sorte!');
     } catch (error) {
-      // 3. Em caso de erro, reverte a atualização do saldo para o valor original
       updateUserDetails({ balance_in_cents: originalBalance });
       if (axios.isAxiosError(error) && error.response) {
         toast.error(error.response?.data?.errors?.join(', ') || 'Erro ao iniciar o jogo');
@@ -65,38 +68,41 @@ const MinesPage: React.FC = () => {
   };
 
   const handleTileClick = async (row: number, col: number) => {
-    if (isLoading || gameState !== 'active') return;
-    setIsLoading(true);
-    try {
-      const response = await revealTile({ row, col });
-      const { status, game: updatedGame } = response.data;
-      
-      if (status === 'game_over') {
-        toast.error('Você acertou uma mina!');
-        setFinalGrid(updatedGame.grid);
+      if (isLoading || gameState !== 'active') return;
+      setIsLoading(true);
+      try {
+        const response = await revealTile({ row, col });
+        
+        const { status, payload } = response.data;
+        
+        const updatedGameAttributes = payload.data.attributes;
+        
+        if (status === 'game_over') {
+          toast.error('Você acertou uma mina!');
+          setFinalGrid(updatedGameAttributes.grid_reveal);
+        }
+        setGame(updatedGameAttributes);
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response) {
+          toast.error(error.response?.data?.errors?.join(', ') || 'Erro ao revelar');
+        }
+      } finally {
+        setIsLoading(false);
       }
-      setGame(updatedGame);
-    } catch (error) {
-      if (axios.isAxiosError(error) && error.response) {
-        toast.error(error.response?.data?.errors?.join(', ') || 'Erro ao revelar');
-      }
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleCashout = async () => {
-    if (isLoading || !user) return;
+    if (isLoading || !user || !game) return;
     setIsLoading(true);
     try {
       const response = await cashout();
       const winningsInCents = response.data.winnings;
+      setFinalGrid(response.data.payload.data.attributes.grid_reveal)
 
-      // 4. Atualiza o saldo com base no valor atual + ganhos
-      updateUserDetails({ balance_in_cents: user.balance_in_cents + winningsInCents });
+      updateUserDetails({ balance_in_cents: user.balance_in_cents - game.bet_amount + winningsInCents });
       
       toast.success(`Você ganhou R$ ${(winningsInCents / 100).toFixed(2)}!`);
-      setGame(null);
+      setGame(response.data.payload.data.attributes);
     } catch (error) {
       if (axios.isAxiosError(error) && error.response) {
         toast.error(error.response?.data?.errors?.join(', ') || 'Erro ao fazer cash out');
@@ -107,9 +113,9 @@ const MinesPage: React.FC = () => {
   };
   
   return (
-    <div className="container mx-auto p-4 text-white">
+    <div className="container mx-auto p-4 text-white max-w-6xl">
       <h1 className="text-3xl font-bold text-center mb-6 text-[var(--primary-gold)]">Mines</h1>
-      <div className="flex flex-col md:flex-row gap-6 justify-center items-start">
+      <div className="flex flex-col lg:flex-row gap-6 justify-center items-start">
         <MinesControls
           betAmount={betAmount}
           setBetAmount={setBetAmount}
@@ -119,7 +125,8 @@ const MinesPage: React.FC = () => {
           onCashout={handleCashout}
           gameState={gameState}
           isLoading={isLoading}
-          payout={game?.payout_multiplier || '1.0'}
+          payout={game?.payout_multiplier || '1.00'}
+          nextPayout={game?.next_multiplier || game?.payout_multiplier || '1.00'}
         />
         <MinesGrid
           onTileClick={handleTileClick}
