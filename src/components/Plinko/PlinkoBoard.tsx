@@ -2,12 +2,11 @@ import React, { useRef, useEffect, useState, useCallback } from 'react';
 import type { PlinkoGame } from '../../types';
 
 interface BallState {
-  x: number;
-  y: number;
-  vy: number;
+  x: number; y: number; vy: number;
   path: ('L' | 'R')[];
   pathIndex: number;
   gameId: number;
+  color: string;
 }
 
 interface PlinkoBoardProps {
@@ -19,12 +18,19 @@ interface PlinkoBoardProps {
 
 const LERP_FACTOR = 0.035;
 const GRAVITY = 0.09;
+const BALL_COLORS = ['#FBBF24', '#34D399', '#60A5FA', '#F472B6'];
 
 const PlinkoBoard: React.FC<PlinkoBoardProps> = ({ rows, balls, onAnimationComplete, setBoardDimensions }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationStates = useRef(new Map<number, BallState>());
   const [dimensions, setDimensions] = useState({ width: 600, height: 550 });
+  const plinkAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    plinkAudioRef.current = new Audio('/sounds/plink.mp3');
+    plinkAudioRef.current.preload = 'auto';
+  }, []);
 
   const updateCanvasDimensions = useCallback(() => {
     if (containerRef.current) {
@@ -53,8 +59,8 @@ const PlinkoBoard: React.FC<PlinkoBoardProps> = ({ rows, balls, onAnimationCompl
     const ballSize = Math.max(4.5, width / 85);
     const rowHeight = (height * 0.8) / rows;
     
-    const horizontalSpacingFactor = rows > 12 ? 1.05 : 1.0;
-    const pegSpacingX = rowHeight * horizontalSpacingFactor;
+    const totalPyramidWidth = width * 0.9;
+    const pegSpacingX = totalPyramidWidth / (rows + 1);
     
     const topPadding = height * 0.1;
 
@@ -63,13 +69,16 @@ const PlinkoBoard: React.FC<PlinkoBoardProps> = ({ rows, balls, onAnimationCompl
     let frameId: number;
 
     const drawPegs = () => {
-      ctx.fillStyle = '#9CA3AF';
       for (let row = 0; row < rows; row++) {
-        const numPegs = row + 1;
+        const numPegs = row + 2;
         const y = topPadding + row * rowHeight;
-        const pegRowWidth = row * pegSpacingX;
+        const pegRowWidth = (numPegs - 1) * pegSpacingX;
         for (let col = 0; col < numPegs; col++) {
           const x = (width / 2) - (pegRowWidth / 2) + col * pegSpacingX;
+          const gradient = ctx.createRadialGradient(x - pinSize * 0.2, y - pinSize * 0.2, 0, x, y, pinSize);
+          gradient.addColorStop(0, '#E5E7EB');
+          gradient.addColorStop(1, '#9CA3AF');
+          ctx.fillStyle = gradient;
           ctx.beginPath();
           ctx.arc(x, y, pinSize, 0, Math.PI * 2);
           ctx.fill();
@@ -78,7 +87,10 @@ const PlinkoBoard: React.FC<PlinkoBoardProps> = ({ rows, balls, onAnimationCompl
     };
 
     const drawBall = (ballState: BallState) => {
-      ctx.fillStyle = '#FBBF24';
+      const gradient = ctx.createRadialGradient(ballState.x - ballSize * 0.3, ballState.y - ballSize * 0.3, ballSize * 0.1, ballState.x, ballState.y, ballSize);
+      gradient.addColorStop(0, 'white');
+      gradient.addColorStop(0.4, ballState.color);
+      ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(ballState.x, ballState.y, ballSize, 0, Math.PI * 2);
       ctx.fill();
@@ -93,46 +105,46 @@ const PlinkoBoard: React.FC<PlinkoBoardProps> = ({ rows, balls, onAnimationCompl
         ball.y += ball.vy;
 
         let targetX: number;
-
         if (ball.pathIndex < ball.path.length) {
-            const targetRow = ball.pathIndex;
-            const numRightMoves = ball.path.slice(0, targetRow + 1).filter(d => d === 'R').length;
-            const pegRowWidth = targetRow * pegSpacingX;
-            targetX = (width / 2) - (pegRowWidth / 2) + (numRightMoves - (ball.path[targetRow] === 'L' ? 1 : 0)) * pegSpacingX;
-            
-            const targetY = topPadding + targetRow * rowHeight;
-            if(ball.y < targetY){
-                ball.x += (targetX - ball.x) * LERP_FACTOR;
+          const numRightMoves = ball.path.slice(0, ball.pathIndex + 1).filter(d => d === 'R').length;
+          const numLeftMoves = (ball.pathIndex + 1) - numRightMoves;
+          const xOffset = (numRightMoves - numLeftMoves) * (pegSpacingX / 2);
+          targetX = width / 2 + xOffset;
+          
+          const targetY = topPadding + ball.pathIndex * rowHeight;
+          if (ball.y < targetY) {
+            ball.x += (targetX - ball.x) * LERP_FACTOR * 2;
+          }
+          if (ball.y >= targetY) {
+            ball.pathIndex++;
+            if (plinkAudioRef.current) {
+                plinkAudioRef.current.currentTime = 0;
+                plinkAudioRef.current.play().catch(e => {});
             }
-            if (ball.y >= targetY) {
-                ball.pathIndex++;
-            }
+          }
         } else {
-            const finalNumRightMoves = ball.path.filter(d => d === 'R').length;
-            const lastRowPegWidth = (rows) * pegSpacingX;
-            targetX = (width / 2) - (lastRowPegWidth / 2) + finalNumRightMoves * pegSpacingX;
-            
-            ball.x += (targetX - ball.x) * LERP_FACTOR;
-            
-            if (ball.y > height + ballSize) {
-                onAnimationComplete(gameId);
-                animationStates.current.delete(gameId);
-            }
+          const finalNumRightMoves = ball.path.filter(d => d === 'R').length;
+          const totalSlotsWidth = (rows + 1) * pegSpacingX;
+          targetX = (width / 2) - (totalSlotsWidth / 2) + (finalNumRightMoves * pegSpacingX) + (pegSpacingX / 2);
+          ball.x += (targetX - ball.x) * LERP_FACTOR;
+          
+          if (ball.y > height + ballSize) {
+            onAnimationComplete(gameId);
+            animationStates.current.delete(gameId);
+          }
         }
         drawBall(ball);
       }
       frameId = requestAnimationFrame(animate);
     };
 
-    balls.forEach(game => {
+    balls.forEach((game, index) => {
       if (!animationStates.current.has(game.id)) {
         animationStates.current.set(game.id, {
-          x: width / 2,
-          y: 0,
-          vy: 0,
-          path: game.path,
-          pathIndex: 0,
-          gameId: game.id,
+          x: width / 2 + (Math.random() - 0.5) * 10,
+          y: 0, vy: 0,
+          path: game.path, pathIndex: 0, gameId: game.id,
+          color: BALL_COLORS[index % BALL_COLORS.length],
         });
       }
     });
