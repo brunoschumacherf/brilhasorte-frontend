@@ -3,10 +3,11 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
+import { User, Mail, Hash, Calendar, Phone, Lock } from 'lucide-react';
 
-// 1. Definir o esquema de validação com Zod
 const registerSchema = z.object({
   full_name: z.string().min(3, "O nome completo é obrigatório"),
   email: z.string().email("Formato de e-mail inválido"),
@@ -17,22 +18,29 @@ const registerSchema = z.object({
   password_confirmation: z.string()
 }).refine(data => data.password === data.password_confirmation, {
   message: "As senhas não conferem",
-  path: ["password_confirmation"], // Onde o erro deve aparecer
+  path: ["password_confirmation"],
 });
 
 type RegisterFormData = z.infer<typeof registerSchema>;
 
-// Componente para exibir erros de um campo específico
-const FieldError: React.FC<{ message?: string }> = ({ message }) => {
-  if (!message) return null;
-  return <p className="text-red-400 text-xs mt-1">{message}</p>;
-};
+const InputField = ({ id, type, placeholder, registerProps, icon, errorMsg }: any) => (
+    <div className="relative">
+        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">{icon}</span>
+        <input
+            id={id}
+            type={type}
+            placeholder={placeholder}
+            {...registerProps}
+            className={`w-full bg-zinc-800 border ${errorMsg ? 'border-red-500' : 'border-zinc-700'} rounded-lg py-2.5 pl-10 pr-3 text-white transition-colors focus:border-yellow-500 focus:ring-yellow-500 focus:outline-none`}
+        />
+        {errorMsg && <p className="text-xs text-red-400 mt-1">{errorMsg}</p>}
+    </div>
+);
 
 const Register: React.FC = () => {
   const { register: registerUser } = useAuth();
   const navigate = useNavigate();
   
-  // 2. Integrar com react-hook-form
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema)
   });
@@ -40,57 +48,53 @@ const Register: React.FC = () => {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       await registerUser(data as any);
-      toast.success("Cadastro realizado com sucesso!");
+      toast.success("Registo realizado com sucesso!");
       navigate('/games');
     } catch (err: any) {
-      const apiError = err.response?.data?.status?.message || "Falha no registro. Verifique os dados e tente novamente.";
+      const apiError = err.response?.data?.status?.message || "Falha no registo. Verifique os dados e tente novamente.";
       toast.error(apiError);
     }
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-[var(--background-dark)]">
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-[var(--surface-dark)] border border-[var(--border-color)] p-8 rounded-lg shadow-lg w-full max-w-lg">
-        <h2 className="text-3xl font-bold mb-6 text-center text-[var(--primary-gold)]">Crie sua Conta</h2>
-        
-        {/* 3. Mapear os campos para o react-hook-form */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <input {...register("full_name")} placeholder="Nome Completo" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
-            <FieldError message={errors.full_name?.message} />
-          </div>
-          <div>
-            <input {...register("email")} placeholder="Email" type="email" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
-            <FieldError message={errors.email?.message} />
-          </div>
-          <div>
-            <input {...register("cpf")} placeholder="CPF" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
-            <FieldError message={errors.cpf?.message} />
-          </div>
-          <div>
-            <input {...register("birth_date")} type="date" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
-            <FieldError message={errors.birth_date?.message} />
-          </div>
-          <div>
-            <input {...register("phone_number")} placeholder="Telefone" type="tel" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
-            <FieldError message={errors.phone_number?.message} />
-          </div>
+    <div className="relative min-h-screen flex items-center justify-center bg-[#101010] p-4 overflow-hidden">
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-500/10 rounded-full filter blur-3xl opacity-50 animate-blob"></div>
+      <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
+
+      <div className="relative z-10 w-full max-w-2xl">
+        <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl overflow-hidden">
+            <div className="p-8 text-center border-b border-white/10">
+                <h2 className="text-3xl font-bold text-white">Crie a sua Conta</h2>
+                <p className="text-sm text-gray-400 mt-1">Junte-se a nós e comece a ganhar prémios hoje mesmo.</p>
+            </div>
+            <form onSubmit={handleSubmit(onSubmit)} className="p-8 space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <InputField id="full_name" type="text" placeholder="Nome Completo" registerProps={register("full_name")} icon={<User size={16} />} errorMsg={errors.full_name?.message} />
+                    <InputField id="email" type="email" placeholder="Email" registerProps={register("email")} icon={<Mail size={16} />} errorMsg={errors.email?.message} />
+                    <InputField id="cpf" type="text" placeholder="CPF" registerProps={register("cpf")} icon={<Hash size={16} />} errorMsg={errors.cpf?.message} />
+                    <InputField id="birth_date" type="date" placeholder="Data de Nascimento" registerProps={register("birth_date")} icon={<Calendar size={16} />} errorMsg={errors.birth_date?.message} />
+                    <InputField id="phone_number" type="tel" placeholder="Telefone" registerProps={register("phone_number")} icon={<Phone size={16} />} errorMsg={errors.phone_number?.message} />
+                </div>
+                
+                <InputField id="password" type="password" placeholder="Senha (mínimo 6 caracteres)" registerProps={register("password")} icon={<Lock size={16} />} errorMsg={errors.password?.message} />
+                <InputField id="password_confirmation" type="password" placeholder="Confirme a Senha" registerProps={register("password_confirmation")} icon={<Lock size={16} />} errorMsg={errors.password_confirmation?.message} />
+                
+                <motion.button 
+                    type="submit" 
+                    disabled={isSubmitting} 
+                    className="w-full bg-gradient-to-r from-yellow-400 to-yellow-600 text-black font-bold py-3 px-4 rounded-lg shadow-lg disabled:opacity-50"
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                >
+                  {isSubmitting ? 'A registar...' : 'Finalizar Registo'}
+                </motion.button>
+
+                <p className="text-center text-sm text-gray-400">
+                    Já tem uma conta? <Link to="/login" className="font-semibold text-yellow-400 hover:underline">Faça login aqui</Link>.
+                </p>
+            </form>
         </div>
-        
-        <div className="mt-4">
-          <input {...register("password")} placeholder="Senha (mínimo 6 caracteres)" type="password" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
-          <FieldError message={errors.password?.message} />
-        </div>
-        
-        <div className="mt-4">
-          <input {...register("password_confirmation")} placeholder="Confirme a Senha" type="password" className="w-full bg-[#2a2a2a] p-3 border border-[var(--border-color)] rounded-md focus:outline-none focus:ring-2 focus:ring-[var(--primary-gold)]" />
-          <FieldError message={errors.password_confirmation?.message} />
-        </div>
-        
-        <button type="submit" disabled={isSubmitting} className="mt-6 w-full bg-[var(--primary-gold)] text-black font-bold py-3 px-4 rounded-lg transition-all duration-300 shadow-lg hover:shadow-yellow-500/20 hover:bg-yellow-300 disabled:bg-gray-500 disabled:shadow-none">
-          {isSubmitting ? 'Cadastrando...' : 'Finalizar Cadastro'}
-        </button>
-      </form>
+      </div>
     </div>
   );
 };
