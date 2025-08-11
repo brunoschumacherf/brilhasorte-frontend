@@ -1,3 +1,5 @@
+// src/components/Admin/ScratchCards/ScratchCardForm.tsx
+
 import React, { useEffect } from 'react';
 import { useForm, useFieldArray, useWatch } from 'react-hook-form';
 import Modal from '../../Shared/Modal';
@@ -37,6 +39,7 @@ const ScratchCardForm: React.FC<ScratchCardFormProps> = ({ isOpen, onClose, onSa
     .filter(p => !p._destroy)
     .reduce((sum, prize) => sum + Number(prize.probability || 0), 0);
 
+  // **** A CORREÇÃO ESTÁ NESTE BLOCO useEffect ****
   useEffect(() => {
     if (isOpen) {
       if (existingScratchCard) {
@@ -44,9 +47,13 @@ const ScratchCardForm: React.FC<ScratchCardFormProps> = ({ isOpen, onClose, onSa
           ...existingScratchCard,
           description: existingScratchCard.description || '',
           image_url: existingScratchCard.image_url || '',
-          // Converte o preço de centavos para reais para exibição no formulário
-          price_in_cents: existingScratchCard.price_in_cents / 100, 
-          prizes: existingScratchCard.prizes || [],
+          // Converte o preço da raspadinha de centavos para reais para exibição
+          price_in_cents: existingScratchCard.price_in_cents / 100,
+          // Mapeia cada prêmio para também converter seu valor de centavos para reais
+          prizes: (existingScratchCard.prizes || []).map(prize => ({
+            ...prize,
+            value_in_cents: prize.value_in_cents / 100
+          })),
         });
       } else {
         reset({ name: '', price_in_cents: 0, description: '', image_url: '', is_active: true, prizes: [] });
@@ -56,16 +63,16 @@ const ScratchCardForm: React.FC<ScratchCardFormProps> = ({ isOpen, onClose, onSa
 
   const onSubmit = async (data: ScratchCardFormData) => {
     // Formata o payload para a API
-    const payload = { 
-      ...data, 
+    const payload = {
+      ...data,
       prizes_attributes: data.prizes.map(p => ({
         ...p,
-        // Converte o valor do prêmio para centavos
-        value_in_cents: Math.round(p.value_in_cents * 100) 
+        // Converte o valor do prêmio de volta para centavos
+        value_in_cents: Math.round(p.value_in_cents * 100)
       })),
-      // Converte o preço da raspadinha para centavos
-      price_in_cents: Math.round(data.price_in_cents * 100) 
-    }; 
+      // Converte o preço da raspadinha de volta para centavos
+      price_in_cents: Math.round(data.price_in_cents * 100)
+    };
     // @ts-ignore - A API espera prizes_attributes, não prizes
     delete payload.prizes;
 
@@ -122,8 +129,8 @@ const ScratchCardForm: React.FC<ScratchCardFormProps> = ({ isOpen, onClose, onSa
             
             return (
               <div key={field.id} className="p-4 border rounded-lg bg-gray-50 relative">
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   onClick={() => field.id ? update(index, { ...field, _destroy: true }) : remove(index)}
                   className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-xl"
                 >&times;</button>

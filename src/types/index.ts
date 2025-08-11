@@ -322,9 +322,7 @@ export interface WithdrawalRequest {
   amount_in_cents: number;
 }
 
-// src/types.ts
 
-// Este tipo agora representa os atributos do jogo
 export interface MinesGameAttributes {
   id: number;
   bet_amount: number;
@@ -333,7 +331,7 @@ export interface MinesGameAttributes {
   payout_multiplier: string;
   next_multiplier?: string;
   revealed_tiles: RevealedTile[];
-  grid_reveal?: TileValue[][]; // Grid só deve ser enviado no fim do jogo
+  grid_reveal?: TileValue[][];
   winnings?: number;
 }
 
@@ -344,19 +342,16 @@ export interface RevealedTile {
 
 export type TileValue = 'mine' | 'diamond';
 
-// Tipo para a estrutura de dados comum da API (JSON:API style)
 export interface ApiResponseData {
   id: string;
   type: string;
   attributes: MinesGameAttributes;
 }
 
-// Tipo para a resposta de criação e busca de jogo
 export interface GameApiResponse {
   data: ApiResponseData;
 }
 
-// Tipo específico para a resposta da ação 'reveal'
 export interface RevealApiResponse {
   status: 'safe' | 'game_over';
   payload: JsonApiPayload<MinesGameAttributes>;
@@ -382,6 +377,5 @@ export interface MinesGamePayload {
 export interface CashoutApiResponse {
   status: string;
   winnings: number;
-  // Adicionando a propriedade 'payload' que estava faltando
   payload: MinesGamePayload;
 }
