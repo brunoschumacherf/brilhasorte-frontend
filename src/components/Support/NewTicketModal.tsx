@@ -2,15 +2,15 @@ import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import Modal from '../Shared/Modal';
-import { createTicket } from '../../services/api';
+import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
+import { createTicket } from '../../services/api'; 
+import Modal from '../Shared/Modal'; 
 
 const ticketSchema = z.object({
   subject: z.string().min(5, "O assunto deve ter pelo menos 5 caracteres."),
   message: z.string().min(10, "A mensagem deve ter pelo menos 10 caracteres."),
 });
-
 type TicketFormData = z.infer<typeof ticketSchema>;
 
 interface NewTicketModalProps {
@@ -26,7 +26,7 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onTick
 
   useEffect(() => {
     if (!isOpen) {
-      reset();
+      setTimeout(() => reset(), 300);
     }
   }, [isOpen, reset]);
 
@@ -41,37 +41,37 @@ const NewTicketModal: React.FC<NewTicketModalProps> = ({ isOpen, onClose, onTick
     }
   };
 
-  const FieldError: React.FC<{ message?: string }> = ({ message }) => message ? <p className="text-red-500 text-xs mt-1">{message}</p> : null;
-
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Abrir Novo Ticket de Suporte">
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
         <div>
-          <label htmlFor="subject" className="block text-sm font-medium text-gray-700">Assunto</label>
+          <label htmlFor="subject" className="block text-xs font-medium text-gray-400 mb-1">Assunto</label>
           <input
             {...register("subject")}
             id="subject"
-            className="mt-1 w-full p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-900"
+            className={`w-full bg-zinc-800 border ${errors.subject ? 'border-red-500' : 'border-zinc-700'} rounded-lg py-2 px-3 text-white transition-colors focus:border-yellow-500 focus:ring-yellow-500 focus:outline-none`}
             placeholder="Ex: Problema com depósito"
           />
-          <FieldError message={errors.subject?.message} />
+          {errors.subject && <p className="text-xs text-red-400 mt-1">{errors.subject.message}</p>}
         </div>
         <div>
-          <label htmlFor="message" className="block text-sm font-medium text-gray-700">Mensagem</label>
+          <label htmlFor="message" className="block text-xs font-medium text-gray-400 mb-1">Mensagem</label>
           <textarea
             {...register("message")}
             id="message"
             rows={5}
-            className="mt-1 w-full p-2 border border-gray-300 rounded-md bg-gray-50 text-gray-900"
-            placeholder="Descreva seu problema ou dúvida em detalhes..."
+            className={`w-full bg-zinc-800 border ${errors.message ? 'border-red-500' : 'border-zinc-700'} rounded-lg py-2 px-3 text-white transition-colors focus:border-yellow-500 focus:ring-yellow-500 focus:outline-none`}
+            placeholder="Descreva o seu problema ou dúvida em detalhes..."
           />
-          <FieldError message={errors.message?.message} />
+          {errors.message && <p className="text-xs text-red-400 mt-1">{errors.message.message}</p>}
         </div>
-        <div className="flex justify-end space-x-3 pt-4 border-t">
-          <button type="button" onClick={onClose} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancelar</button>
-          <button type="submit" disabled={isSubmitting} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg disabled:bg-gray-400">
-            {isSubmitting ? 'Enviando...' : 'Enviar Ticket'}
-          </button>
+        <div className="flex justify-end space-x-4 pt-4">
+          <motion.button type="button" onClick={onClose} className="px-6 py-2 rounded-lg text-sm font-bold text-gray-300 bg-white/5 hover:bg-white/10" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            Cancelar
+          </motion.button>
+          <motion.button type="submit" disabled={isSubmitting} className="px-6 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-black disabled:opacity-50" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            {isSubmitting ? 'A enviar...' : 'Enviar Ticket'}
+          </motion.button>
         </div>
       </form>
     </Modal>

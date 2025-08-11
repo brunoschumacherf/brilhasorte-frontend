@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { Key, ReactNode } from "react";
 
 export interface User {
   id: number;
@@ -147,6 +147,7 @@ export interface WithdrawalHistoryItem {
 }
 
 export interface RankingItem {
+  user_id: Key | null | undefined;
   full_name: string;
   total_winnings: number;
 }
@@ -176,6 +177,7 @@ export interface PrizeAttributes {
 }
 
 export interface Game {
+  scratch_card_prizes: any;
   scratch_card_rules: string;
   scratch_card_title: string;
   status: string;
@@ -188,7 +190,7 @@ export interface Game {
     game_hash: string;
     created_at: string;
     winnings_in_cents: number;
-    scratch_card_prize?: PrizeAttributes[]; // Lista de prêmios possíveis
+    scratch_card_prize?: PrizeAttributes[];
   };
 }
 
