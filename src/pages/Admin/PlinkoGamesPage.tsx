@@ -4,9 +4,9 @@ import { getAdminPlinkoGameList } from '../../services/api';
 import PlinkoGameList from '../../components/Admin/Plinko/PlinkoGameList';
 import PaginationControls from '../../components/Shared/PaginationControls';
 import type { JsonApiData, AdminPlinkoGameListItem } from '../../types';
+import { Gem } from 'lucide-react';
 
 const PlinkoGamesPage: React.FC = () => {
-  // O estado agora armazena a estrutura de dados completa da API
   const [games, setGames] = useState<JsonApiData<AdminPlinkoGameListItem>[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,6 @@ const PlinkoGamesPage: React.FC = () => {
     setLoading(true);
     try {
       const response = await getAdminPlinkoGameList(page);
-      // Define o estado diretamente com os dados da API, sem mapeamento
       setGames(response.data.data);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
@@ -33,21 +32,28 @@ const PlinkoGamesPage: React.FC = () => {
     fetchGames(currentPage);
   }, [currentPage]);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-  };
-
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Histórico de Jogos - Plinko</h1>
-      <div className="bg-gray-800 shadow sm:rounded-lg">
-        <PlinkoGameList games={games} loading={loading} included={included} />
-      </div>
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+    <div className="w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+                <h1 className="text-2xl font-bold text-white flex items-center gap-3"><Gem /> Jogos Plinko</h1>
+                <p className="text-sm text-gray-400 mt-1">Gira e monitorize todos os jogos Plinko.</p>
+            </div>
+        </div>
+
+        <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-6">
+            <PlinkoGameList games={games} loading={loading} included={included} />
+            
+            {totalPages > 1 && (
+                <div className="mt-6">
+                    <PaginationControls
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
+                </div>
+            )}
+        </div>
     </div>
   );
 };

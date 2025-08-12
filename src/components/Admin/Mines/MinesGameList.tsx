@@ -1,16 +1,16 @@
 import React from 'react';
 import type { AdminMinesGameListItem, JsonApiData } from '../../../types';
-import TableSkeleton from '../../Shared/TableSkeleton';
+import { motion } from 'framer-motion';
+import { User, Bomb, TrendingUp, CheckCircle2, XCircle, Clock } from 'lucide-react';
 
 interface MinesGameListProps {
-  // A prop 'games' agora espera o formato da API
   games: JsonApiData<AdminMinesGameListItem>[];
   loading: boolean;
   included: any[];
 }
 
 const MinesGameList: React.FC<MinesGameListProps> = ({ games, loading, included }) => {
-  const formatBalance = (balanceInCents: number) => {
+  const formatCurrency = (balanceInCents: number) => {
     return (balanceInCents / 100).toLocaleString('pt-BR', {
       style: 'currency',
       currency: 'BRL',
@@ -26,43 +26,60 @@ const MinesGameList: React.FC<MinesGameListProps> = ({ games, loading, included 
   const getStateLabel = (state: string) => {
     switch (state) {
       case 'active':
-        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Ativo</span>;
+        return { label: 'Ativo', icon: <Clock size={14} />, className: 'text-yellow-400 bg-yellow-500/10' };
       case 'busted':
-        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Perdeu</span>;
+        return { label: 'Perdeu', icon: <XCircle size={14} />, className: 'text-red-400 bg-red-500/10' };
       case 'cashed_out':
-        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Ganhou</span>;
+        return { label: 'Ganhou', icon: <CheckCircle2 size={14} />, className: 'text-green-400 bg-green-500/10' };
       default:
-        return <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">{state}</span>;
+        return { label: state, icon: null, className: 'text-gray-400 bg-gray-500/10' };
     }
   };
 
+  if (loading) return <div className="text-center text-gray-400 py-12">A carregar jogos...</div>;
+  if (games.length === 0) return <div className="text-center text-gray-400 py-12">Nenhum jogo Mines encontrado.</div>;
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-700">
-        <thead className="bg-gray-700">
-          <tr>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Usuário</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Aposta</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Minas</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Multiplicador</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Estado</th>
-            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Data</th>
-          </tr>
-        </thead>
-        <tbody className="bg-gray-800 divide-y divide-gray-700">
-          {loading ? <TableSkeleton cols={6} /> : games.map((game) => (
-            // Corrigido: Acessa os dados através de 'game.attributes'
-            <tr key={game.id} className="hover:bg-gray-700">
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(game.relationships.user)}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{formatBalance(game.attributes.bet_amount)}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.attributes.mines_count}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.attributes.payout_multiplier}x</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm">{getStateLabel(game.attributes.state)}</td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{new Date(game.attributes.created_at).toLocaleString('pt-BR')}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="space-y-4">
+      {games.map((game, index) => {
+        const { attributes, relationships } = game;
+        const stateInfo = getStateLabel(attributes.state);
+        return (
+          <motion.div
+            key={game.id}
+            className="bg-white/5 p-4 rounded-lg border border-white/10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm items-center">
+              <div className="lg:col-span-2">
+                <p className="text-xs text-gray-400 flex items-center gap-1"><User size={12}/> Utilizador</p>
+                <p className="font-medium text-white truncate">{findUserEmail(relationships.user)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Aposta</p>
+                <p className="font-semibold text-gray-300">{formatCurrency(attributes.bet_amount)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 flex items-center gap-1"><Bomb size={12}/> Minas</p>
+                <p className="font-medium text-white">{attributes.mines_count}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 flex items-center gap-1"><TrendingUp size={12}/> Multiplicador</p>
+                <p className="font-medium text-white">{attributes.payout_multiplier}x</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Estado</p>
+                <div className={`flex items-center gap-2 text-xs font-semibold px-2 py-1 rounded-full ${stateInfo.className}`}>
+                    {stateInfo.icon}
+                    <span>{stateInfo.label}</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 };

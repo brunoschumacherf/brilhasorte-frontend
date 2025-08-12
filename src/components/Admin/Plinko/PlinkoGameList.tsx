@@ -1,17 +1,17 @@
 import React from 'react';
 import type { AdminPlinkoGameListItem, JsonApiData } from '../../../types';
-import TableSkeleton from '../../Shared/TableSkeleton';
+import { motion } from 'framer-motion';
+import { User, BarChart, TrendingUp, Calendar } from 'lucide-react';
 
 interface PlinkoGameListProps {
-  // A prop 'games' agora espera o formato da API
   games: JsonApiData<AdminPlinkoGameListItem>[];
   loading: boolean;
   included: any[];
 }
 
 const PlinkoGameList: React.FC<PlinkoGameListProps> = ({ games, loading, included }) => {
-  const formatBalance = (balanceInCents: number) => {
-    return (balanceInCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatCurrency = (valueInCents: number) => {
+    return (valueInCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   };
 
   const findUserEmail = (relationship: { data: { id: string; type: string } } | undefined) => {
@@ -22,44 +22,62 @@ const PlinkoGameList: React.FC<PlinkoGameListProps> = ({ games, loading, include
 
   const getRiskLabel = (risk: string) => {
     const riskMap: { [key: string]: { label: string, className: string } } = {
-      low: { label: 'Baixo', className: 'bg-blue-100 text-blue-800' },
-      medium: { label: 'Médio', className: 'bg-yellow-100 text-yellow-800' },
-      high: { label: 'Alto', className: 'bg-red-100 text-red-800' },
+      low: { label: 'Baixo', className: 'text-blue-400 bg-blue-500/10' },
+      medium: { label: 'Médio', className: 'text-yellow-400 bg-yellow-500/10' },
+      high: { label: 'Alto', className: 'text-red-400 bg-red-500/10' },
     };
-    const riskInfo = riskMap[risk] || { label: risk, className: 'bg-gray-100 text-gray-800' };
-    return <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${riskInfo.className}`}>{riskInfo.label}</span>;
+    return riskMap[risk] || { label: risk, className: 'text-gray-400 bg-gray-500/10' };
   };
 
+  if (loading) return <div className="text-center text-gray-400 py-12">A carregar jogos...</div>;
+  if (games.length === 0) return <div className="text-center text-gray-400 py-12">Nenhum jogo Plinko encontrado.</div>;
+
   return (
-    <div className="bg-gray-800 shadow overflow-hidden sm:rounded-lg">
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-700">
-          <thead className="bg-gray-700">
-            <tr>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Usuário</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Aposta</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Prêmio</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Linhas</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Risco</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Multiplicador</th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Data</th>
-            </tr>
-          </thead>
-          <tbody className="bg-gray-800 divide-y divide-gray-700">
-            {loading ? <TableSkeleton cols={7} /> : games.map((game) => (
-              <tr key={game.id} className="hover:bg-gray-700">
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(game.relationships.user)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatBalance(game.attributes.bet_amount)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-yellow-400 font-semibold">{formatBalance(game.attributes.winnings)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.attributes.rows}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">{getRiskLabel(game.attributes.risk)}</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{game.attributes.multiplier}x</td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{new Date(game.attributes.created_at).toLocaleString('pt-BR')}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div className="space-y-4">
+      {games.map((game, index) => {
+        const { attributes, relationships } = game;
+        const riskInfo = getRiskLabel(attributes.risk);
+        const hasWon = attributes.winnings > 0;
+        return (
+          <motion.div
+            key={game.id}
+            className="bg-white/5 p-4 rounded-lg border border-white/10"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.05 }}
+          >
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 text-sm items-center">
+              <div>
+                <p className="text-xs text-gray-400 flex items-center gap-1"><User size={12}/> Utilizador</p>
+                <p className="font-medium text-white truncate">{findUserEmail(relationships.user)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Aposta</p>
+                <p className="font-semibold text-gray-300">{formatCurrency(attributes.bet_amount)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400">Prémio</p>
+                <p className={`font-semibold ${hasWon ? 'text-green-400' : 'text-gray-400'}`}>{formatCurrency(attributes.winnings)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 flex items-center gap-1"><BarChart size={12}/> Linhas / Risco</p>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-white">{attributes.rows}</span>
+                  <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${riskInfo.className}`}>{riskInfo.label}</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 flex items-center gap-1"><TrendingUp size={12}/> Multiplicador</p>
+                <p className="font-medium text-white">{attributes.multiplier}x</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-400 flex items-center gap-1"><Calendar size={12}/> Data</p>
+                <p className="text-gray-300">{new Date(attributes.created_at).toLocaleString('pt-BR')}</p>
+              </div>
+            </div>
+          </motion.div>
+        );
+      })}
     </div>
   );
 };

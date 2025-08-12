@@ -2,17 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { getAdminScratchCardList, getAdminScratchCardDetails } from '../../../services/api';
 import type { AdminScratchCard, JsonApiData, AdminPrize } from '../../../types';
 import ScratchCardForm from './ScratchCardForm';
-import TableSkeleton from '../../Shared/TableSkeleton';
 import PaginationControls from '../../Shared/PaginationControls';
 import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
+import { Ticket, PlusCircle, Edit, CheckCircle2, XCircle } from 'lucide-react';
 
-// Tipo auxiliar para identificar recursos em relacionamentos JSON:API
 type ResourceIdentifier = { id: string; type: string };
 
 const ScratchCardList: React.FC = () => {
   const [scratchCards, setScratchCards] = useState<AdminScratchCard[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDetailLoading, setIsDetailLoading] = useState(false);
+  const [isDetailLoading, setIsDetailLoading] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedCard, setSelectedCard] = useState<AdminScratchCard | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,7 +22,7 @@ const ScratchCardList: React.FC = () => {
     setLoading(true);
     try {
       const response = await getAdminScratchCardList(page);
-      const cards = response.data.data.map(item => ({
+      const cards = response.data.data.map((item: any) => ({
         ...item.attributes,
         id: parseInt(item.id, 10)
       }));
@@ -40,10 +40,6 @@ const ScratchCardList: React.FC = () => {
     fetchScratchCards(currentPage);
   }, [currentPage, fetchScratchCards]);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-  };
-
   const handleSave = () => {
     setIsModalOpen(false);
     setSelectedCard(null);
@@ -51,12 +47,10 @@ const ScratchCardList: React.FC = () => {
   };
 
   const handleEdit = async (card: AdminScratchCard) => {
-    setIsDetailLoading(true);
-    setSelectedCard(card);
+    setIsDetailLoading(card.id);
     try {
       const response = await getAdminScratchCardDetails(card.id);
       const includedData: JsonApiData<any>[] = response.data.included || [];
-      
       const fullCardData: AdminScratchCard = {
         ...response.data.data.attributes,
         id: parseInt(response.data.data.id, 10),
@@ -68,13 +62,12 @@ const ScratchCardList: React.FC = () => {
           })
           .filter((p: any): p is AdminPrize => p !== null),
       };
-
       setSelectedCard(fullCardData);
       setIsModalOpen(true);
     } catch {
       toast.error("Não foi possível carregar os detalhes da raspadinha.");
     } finally {
-      setIsDetailLoading(false);
+      setIsDetailLoading(null);
     }
   };
 
@@ -87,57 +80,81 @@ const ScratchCardList: React.FC = () => {
     return (priceInCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   }
 
+  const renderContent = () => {
+    if (loading) return <div className="text-center text-gray-400 py-12">A carregar raspadinhas...</div>;
+    if (scratchCards.length === 0) return <div className="text-center text-gray-400 py-12">Nenhuma raspadinha encontrada.</div>;
+
+    return (
+        <div className="space-y-4">
+            {scratchCards.map((card, index) => (
+                <motion.div
+                    key={card.id}
+                    className="bg-white/5 p-4 rounded-lg border border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.05 }}
+                >
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 flex-grow text-sm">
+                        <div className="sm:col-span-1">
+                            <p className="text-xs text-gray-400">Nome</p>
+                            <p className="font-medium text-white">{card.name}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400">Preço</p>
+                            <p className="font-semibold text-green-400">{formatPrice(card.price_in_cents)}</p>
+                        </div>
+                        <div>
+                            <p className="text-xs text-gray-400">Status</p>
+                            <div className={`flex items-center gap-2 text-xs font-semibold px-2 py-1 rounded-full ${card.is_active ? 'text-green-400 bg-green-500/10' : 'text-red-400 bg-red-500/10'}`}>
+                                {card.is_active ? <CheckCircle2 size={14} /> : <XCircle size={14} />}
+                                <span>{card.is_active ? 'Ativa' : 'Inativa'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button 
+                        onClick={() => handleEdit(card)} 
+                        className="flex-shrink-0 text-yellow-400 hover:text-yellow-300 p-2 rounded-md hover:bg-white/10 transition-colors disabled:opacity-50"
+                        disabled={isDetailLoading !== null}
+                    >
+                        {isDetailLoading === card.id ? 'A carregar...' : <Edit size={16} />}
+                    </button>
+                </motion.div>
+            ))}
+        </div>
+    );
+  };
+
   return (
-    <div className="p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Raspadinhas</h1>
-        <button onClick={handleAddNew} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+    <div className="w-full">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+        <div>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-3"><Ticket /> Raspadinhas</h1>
+            <p className="text-sm text-gray-400 mt-1">Crie e gira as raspadinhas disponíveis para os utilizadores.</p>
+        </div>
+        <motion.button 
+            onClick={handleAddNew} 
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-black"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+        >
+          <PlusCircle size={16} />
           Adicionar Nova
-        </button>
+        </motion.button>
       </div>
 
-      <div className="bg-gray-800 shadow sm:rounded-lg">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Nome</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Preço</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-300 uppercase tracking-wider">Ações</th>
-              </tr>
-            </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {loading ? <TableSkeleton cols={4} /> : scratchCards.map((card) => (
-                <tr key={card.id} className="hover:bg-gray-700">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">{card.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-400">{formatPrice(card.price_in_cents)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${card.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                      {card.is_active ? 'Ativa' : 'Inativa'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button 
-                      onClick={() => handleEdit(card)} 
-                      className="text-indigo-400 hover:text-indigo-300 disabled:text-gray-500"
-                      disabled={isDetailLoading}
-                    >
-                      {isDetailLoading && selectedCard?.id === card.id ? 'Carregando...' : 'Editar'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+      <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-6">
+        {renderContent()}
+        
+        {totalPages > 1 && (
+            <div className="mt-6">
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={(page) => setCurrentPage(page)}
+                />
+            </div>
+        )}
       </div>
-      
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
 
       {isModalOpen && <ScratchCardForm isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} onSave={handleSave} existingScratchCard={selectedCard} />}
     </div>
