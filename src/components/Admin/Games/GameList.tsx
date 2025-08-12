@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getAdminGameList } from '../../../services/api';
 import type { AdminGameListItem } from '../../../types';
-import TableSkeleton from '../../Shared/TableSkeleton';
 import PaginationControls from '../../Shared/PaginationControls';
 import { toast } from 'react-toastify';
+import { motion } from 'framer-motion';
+import { Gamepad2, Trophy, Ticket } from 'lucide-react';
 
-// This new type represents the actual shape of the data we'll use in the component's state.
 type ProcessedGame = AdminGameListItem & {
   relationships: any;
 };
@@ -14,24 +14,18 @@ const GameList: React.FC = () => {
   const [games, setGames] = useState<ProcessedGame[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetches data for the specified page
   const fetchGames = async (page: number) => {
     setLoading(true);
     try {
       const response = await getAdminGameList(page);
-
-      // We map the API response to a flatter, easier-to-use structure.
-      const formattedGames: ProcessedGame[] = response.data.data.map(item => ({
-        ...item.attributes, // Spread all the attributes like status, winnings, etc.
-        id: parseInt(item.id, 10), // Use the main ID, converting it to a number.
-        relationships: item.relationships, // Keep the relationships for user, prize, etc.
+      const formattedGames: ProcessedGame[] = response.data.data.map((item: any) => ({
+        ...item.attributes,
+        id: parseInt(item.id, 10),
+        relationships: item.relationships,
       }));
-
       setGames(formattedGames);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
@@ -47,15 +41,11 @@ const GameList: React.FC = () => {
     fetchGames(currentPage);
   }, [currentPage]);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-  };
-
   const findIncludedData = (relationship: { data: { id: string; type: string } } | undefined) => {
-    if (!relationship?.data) return { name: 'N/A', email: 'N/A' };
+    if (!relationship?.data) return { name: 'N/A', email: 'N/A', full_name: 'N/A' };
     const { id, type } = relationship.data;
     const found = included.find(item => item.id === id && item.type === type);
-    return found?.attributes || { name: 'N/A', email: 'N/A' };
+    return found?.attributes || { name: 'N/A', email: 'N/A', full_name: 'N/A' };
   };
 
   const formatWinnings = (winningsInCents: number) => {
@@ -65,58 +55,79 @@ const GameList: React.FC = () => {
     });
   };
 
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Histórico de Jogos (Raspadinhas)</h1>
+  const renderContent = () => {
+    if (loading) return <div className="text-center text-gray-400 py-12">A carregar jogos...</div>;
+    if (games.length === 0) return <div className="text-center text-gray-400 py-12">Nenhum jogo encontrado.</div>;
 
-      <div className="bg-gray-800 shadow sm:rounded-lg">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Usuário</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Raspadinha</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Prêmio</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Valor Ganho</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Data</th>
-              </tr>
-            </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {loading ? <TableSkeleton cols={5} /> : games.map((game) => {
+    return (
+        <div className="space-y-4">
+            {games.map((game, index) => {
                 const user = findIncludedData(game.relationships.user);
                 const prize = findIncludedData(game.relationships.prize);
                 const scratchCard = findIncludedData(game.relationships.scratch_card);
+                const hasWon = game.winnings_in_cents > 0;
 
                 return (
-                  <tr key={game.id} className="hover:bg-gray-700">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">
-                      {user.full_name || user.email}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {scratchCard.name}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">
-                      {prize.name}
-                    </td>
-                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-semibold ${game.winnings_in_cents > 0 ? 'text-green-400' : 'text-gray-400'}`}>
-                      {formatWinnings(game.winnings_in_cents)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
-                      {new Date(game.created_at).toLocaleString('pt-BR')}
-                    </td>
-                  </tr>
+                    <motion.div
+                        key={game.id}
+                        className="bg-white/5 p-4 rounded-lg border border-white/10"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                    >
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                            <div>
+                                <p className="text-xs text-gray-400">Utilizador</p>
+                                <p className="font-medium text-white truncate">{user.full_name || user.email}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400">Raspadinha</p>
+                                <p className="font-medium text-gray-300 flex items-center gap-2"><Ticket size={14} /> {scratchCard.name}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400">Prémio</p>
+                                <p className="font-medium text-gray-300 flex items-center gap-2"><Trophy size={14} /> {prize.name}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400">Valor Ganho</p>
+                                <p className={`font-semibold ${hasWon ? 'text-green-400' : 'text-gray-400'}`}>
+                                    {formatWinnings(game.winnings_in_cents)}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400">Data</p>
+                                <p className="text-gray-300">{new Date(game.created_at).toLocaleString('pt-BR')}</p>
+                            </div>
+                        </div>
+                    </motion.div>
                 );
-              })}
-            </tbody>
-          </table>
+            })}
         </div>
-      </div>
+    );
+  };
 
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+  return (
+    <div className="w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+                <h1 className="text-2xl font-bold text-white flex items-center gap-3"><Gamepad2 /> Histórico de Jogos</h1>
+                <p className="text-sm text-gray-400 mt-1">Gira e monitorize todos os jogos de raspadinha.</p>
+            </div>
+        </div>
+
+        <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-6">
+            {renderContent()}
+            
+            {totalPages > 1 && (
+                <div className="mt-6">
+                    <PaginationControls
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
+                </div>
+            )}
+        </div>
     </div>
   );
 };

@@ -4,9 +4,9 @@ import { getAdminMinesGameList } from '../../services/api';
 import MinesGameList from '../../components/Admin/Mines/MinesGameList';
 import PaginationControls from '../../components/Shared/PaginationControls';
 import type { JsonApiData, AdminMinesGameListItem } from '../../types';
+import { Bomb } from 'lucide-react';
 
 const MinesGamesPage: React.FC = () => {
-  // O estado agora armazena a estrutura de dados completa da API
   const [games, setGames] = useState<JsonApiData<AdminMinesGameListItem>[]>([]);
   const [included, setIncluded] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +17,6 @@ const MinesGamesPage: React.FC = () => {
     setLoading(true);
     try {
       const response = await getAdminMinesGameList(page);
-      // Corrigido: Define o estado diretamente com os dados da API, sem mapeamento
       setGames(response.data.data);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
@@ -33,23 +32,28 @@ const MinesGamesPage: React.FC = () => {
     fetchGames(currentPage);
   }, [currentPage]);
 
-  const handlePageChange = (newPage: number) => {
-    if (newPage > 0 && newPage <= totalPages) {
-      setCurrentPage(newPage);
-    }
-  };
-
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Histórico de Jogos - Mines</h1>
-      <div className="bg-gray-800 shadow sm:rounded-lg">
-        <MinesGameList games={games} loading={loading} included={included} />
-      </div>
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
-      />
+    <div className="w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+            <div>
+                <h1 className="text-2xl font-bold text-white flex items-center gap-3"><Bomb /> Jogos Mines</h1>
+                <p className="text-sm text-gray-400 mt-1">Gira e monitorize todos os jogos Mines.</p>
+            </div>
+        </div>
+
+        <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-6">
+            <MinesGameList games={games} loading={loading} included={included} />
+            
+            {totalPages > 1 && (
+                <div className="mt-6">
+                    <PaginationControls
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={(page) => setCurrentPage(page)}
+                    />
+                </div>
+            )}
+        </div>
     </div>
   );
 };
