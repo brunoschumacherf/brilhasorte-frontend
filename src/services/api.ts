@@ -28,7 +28,8 @@ import type {
   AdminPlinkoGameListItem,
   GameApiResponse,
   RevealApiResponse,
-  CashoutApiResponse
+  CashoutApiResponse,
+  TowerGame
 } from '../types';
 
 const api = axios.create({
@@ -147,5 +148,23 @@ export const createAdminTicketReply = (ticketNumber: string, message: string, cl
 
 export const approveAdminWithdrawal = (withdrawalId: string) =>
   api.patch(`/api/v1/admin/withdrawals/${withdrawalId}/approve`);
+
+
+export const createTowerGame = (difficulty: string, bet_amount_in_cents: number) =>
+  api.post<JsonApiSingular<TowerGame>>('/api/v1/tower_games', {
+    tower_game: { difficulty, bet_amount_in_cents },
+  });
+
+export const playTowerGame = (gameId: number, choice_index: number) =>
+  api.post<JsonApiSingular<TowerGame>>(`/api/v1/tower_games/${gameId}/play`, { choice_index });
+
+export const cashOutTowerGame = (gameId: number) =>
+  api.post<JsonApiSingular<TowerGame>>(`/api/v1/tower_games/${gameId}/cash_out`);
+
+export const getActiveTowerGame = () =>
+  api.get<JsonApiSingular<TowerGame>>('/api/v1/tower_games/active_game');
+
+export const getTowerGameConfig = () => api.get('/api/v1/game_settings/tower');
+
 
 export default api;

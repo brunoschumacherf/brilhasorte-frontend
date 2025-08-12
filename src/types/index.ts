@@ -381,3 +381,18 @@ export interface CashoutApiResponse {
   winnings: number;
   payload: MinesGamePayload;
 }
+
+export interface TowerGame {
+  id: number;
+  difficulty: 'easy' | 'medium' | 'hard' | 'expert' | 'legendary';
+  bet_amount_in_cents: number;
+  status: 'active' | 'cashed_out' | 'lost';
+  current_level: number;
+  payout_multiplier: number;
+  winnings_in_cents: number;
+  created_at: string;
+  current_winnings: number;
+  next_potential_winnings?: number;
+  revealed_level?: ('diamond' | 'bomb')[];
+  player_choices: number[];
+}
