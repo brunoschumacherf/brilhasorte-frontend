@@ -29,7 +29,8 @@ import type {
   GameApiResponse,
   RevealApiResponse,
   CashoutApiResponse,
-  TowerGame
+  TowerGame,
+  LimboGame
 } from '../types';
 
 const api = axios.create({
@@ -165,6 +166,14 @@ export const getActiveTowerGame = () =>
   api.get<JsonApiSingular<TowerGame>>('/api/v1/tower_games/active_game');
 
 export const getTowerGameConfig = () => api.get('/api/v1/game_settings/tower');
+
+export const playGameLimbo = (bet_amount_in_cents: number, target_multiplier: number) =>
+  api.post<JsonApiSingular<LimboGame>>('/api/v1/limbo_games', {
+    limbo_game: { bet_amount_in_cents, target_multiplier },
+  });
+
+export const getLimboHistory = () =>
+  api.get<JsonApiCollection<LimboGame>>('/api/v1/limbo_games/history');
 
 
 export default api;

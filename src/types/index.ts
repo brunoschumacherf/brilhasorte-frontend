@@ -396,3 +396,14 @@ export interface TowerGame {
   revealed_level?: ('diamond' | 'bomb')[];
   player_choices: number[];
 }
+
+
+export interface LimboGame {
+  id: number;
+  bet_amount_in_cents: number;
+  target_multiplier: number;
+  result_multiplier: number;
+  winnings_in_cents: number;
+  status: 'won' | 'lost';
+  created_at: string;
+}

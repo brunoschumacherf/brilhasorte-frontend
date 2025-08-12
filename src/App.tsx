@@ -36,7 +36,7 @@ import MinesGamesPage from './pages/Admin/MinesGamesPage'; // 1. Importe a nova 
 import PlinkoPage from './pages/PlinkoPage'; // 1. Importe a nova página
 import PlinkoGamesPage from './pages/Admin/PlinkoGamesPage'; // 1. Importe a página
 import TowerGamePage from './pages/TowerGamePage';
-
+import LimboGamePage from './pages/LimboGamePage';
 
 
 
@@ -64,7 +64,7 @@ function App() {
             <Route path="my-games" element={<MyGamesPage />} />
             <Route path="/plinko" element={<PlinkoPage />} /> {/* 2. Adicione a rota */}
             <Route path="tower" element={<TowerGamePage />} /> {/* ROTA ADICIONADA AQUI */}
-
+            <Route path="limbo" element={<LimboGamePage />} /> {/* ROTA ADICIONADA AQUI */}
             <Route path="games/:gameId" element={<GameRevealPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="history" element={<HistoryPage />} />
