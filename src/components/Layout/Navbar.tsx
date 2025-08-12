@@ -73,6 +73,7 @@ const UserMenu = ({ user, onDeposit, onWithdraw, onLogout, accessibleAccountItem
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
       >
+        <User size={16} className="text-gray-400" />
         <span className="text-green-400 font-semibold">R$ {(user.balance_in_cents / 100).toFixed(2)}</span>
         <ChevronDown size={16} className={`transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </motion.button>

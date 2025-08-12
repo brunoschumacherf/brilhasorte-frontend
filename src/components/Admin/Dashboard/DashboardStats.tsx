@@ -1,28 +1,43 @@
 import React, { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { getAdminDashboardStats, type RankingPeriod } from '../../../services/api';
 import type { AdminDashboardStats } from '../../../types';
+import { motion, AnimatePresence } from 'framer-motion';
+import { DollarSign, Wallet, Users, Gamepad2, AlertTriangle, LayoutDashboard } from 'lucide-react';
 
-// Ícones para os cards
-const RevenueIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v.01" /></svg>;
-const DepositIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>;
-const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-3-5.197M15 21a6 6 0 00-9-5.197" /></svg>;
-const GamesIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z" /></svg>;
-
-
-const StatCard: React.FC<{ title: string; value: string | number; icon: ReactNode; bgColor: string; isCurrency?: boolean }> = ({ title, value, icon, bgColor, isCurrency = false }) => (
-  <div className="bg-white rounded-lg shadow-md flex items-center p-5">
-    <div className={`rounded-full p-3 mr-4 ${bgColor}`}>
-      {icon}
+const LoadingSpinner = () => (
+    <div className="flex flex-col items-center justify-center h-64 text-gray-400">
+        <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+        >
+            <LayoutDashboard className="h-12 w-12 text-[var(--primary-gold)]" />
+        </motion.div>
+        <p className="mt-4 text-lg">A carregar as estatísticas...</p>
     </div>
-    <div>
-      <p className="text-sm font-medium text-gray-500">{title}</p>
-      <p className="text-2xl font-bold text-gray-800">
-        {isCurrency ? `R$ ${(Number(value) / 100).toFixed(2)}` : value}
-      </p>
-    </div>
-  </div>
 );
 
+const StatCard: React.FC<{ title: string; value: string | number; icon: ReactNode; color: string; isCurrency?: boolean }> = ({ title, value, icon, color, isCurrency = false }) => {
+    const formatCurrency = (valueInCents: number) => {
+        const value = valueInCents / 100;
+        return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    };
+
+    return (
+        <div className="bg-white/5 p-5 rounded-lg border border-white/10 flex items-center gap-5">
+            <div className={`flex-shrink-0 h-12 w-12 rounded-full flex items-center justify-center bg-gradient-to-br ${color}`}>
+                {icon}
+            </div>
+            <div>
+                <p className="text-sm text-gray-400">{title}</p>
+                <p className="text-2xl font-bold text-white">
+                    {isCurrency ? formatCurrency(Number(value)) : Number(value).toLocaleString('pt-BR')}
+                </p>
+            </div>
+        </div>
+    );
+};
+
+// --- COMPONENTE PRINCIPAL DO DASHBOARD ---
 const DashboardStats: React.FC = () => {
   const [period, setPeriod] = useState<RankingPeriod>('monthly');
   const [stats, setStats] = useState<AdminDashboardStats | null>(null);
@@ -56,34 +71,61 @@ const DashboardStats: React.FC = () => {
   ];
 
   return (
-    <div>
-      <div className="flex items-center justify-end mb-6">
-        <div className="flex space-x-2 p-1 bg-gray-200 rounded-lg">
-          {periodLabels.map(({ key, label }) => (
-            <button
-              key={key}
-              onClick={() => setPeriod(key)}
-              className={`px-3 py-1 text-sm font-semibold rounded-md transition-colors ${
-                period === key ? 'bg-white text-gray-800 shadow' : 'bg-transparent text-gray-600 hover:bg-white/60'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="relative min-h-screen bg-[#101010] p-4 sm:p-6 lg:p-8 overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-yellow-500/10 rounded-full filter blur-3xl opacity-50 animate-blob"></div>
+        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full filter blur-3xl opacity-50 animate-blob animation-delay-2000"></div>
 
-      {loading && <p>Carregando estatísticas...</p>}
-      {error && <p className="text-red-500">{error}</p>}
-      
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <StatCard title="Receita Bruta (GGR)" value={stats.gross_gaming_revenue_in_cents} icon={<RevenueIcon />} bgColor="bg-green-500" isCurrency />
-          <StatCard title="Total Depositado" value={stats.total_deposited_in_cents} icon={<DepositIcon />} bgColor="bg-blue-500" isCurrency />
-          <StatCard title="Novos Usuários (período)" value={stats.new_users} icon={<UsersIcon />} bgColor="bg-purple-500" />
-          <StatCard title="Jogos Disputados" value={stats.games_played} icon={<GamesIcon />} bgColor="bg-orange-500" />
+        <div className="container mx-auto max-w-7xl relative z-10">
+            <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl overflow-hidden">
+                <div className="p-6 border-b border-white/10 flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div>
+                        <h1 className="text-2xl font-bold text-white">Dashboard Administrativo</h1>
+                        <p className="text-sm text-gray-400 mt-1">Visão geral das métricas da plataforma.</p>
+                    </div>
+                    <div className="flex justify-center bg-black/20 p-1 rounded-full border border-white/10">
+                        {periodLabels.map(({ key, label }) => (
+                            <button
+                                key={key}
+                                onClick={() => setPeriod(key)}
+                                className={`w-full px-4 py-2 text-sm font-semibold rounded-full transition-colors relative ${period === key ? 'text-black' : 'text-gray-300 hover:bg-white/5'}`}
+                            >
+                                {period === key && (
+                                    <motion.div
+                                        layoutId="active-admin-tab"
+                                        className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-yellow-600 rounded-full"
+                                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                                    />
+                                )}
+                                <span className="relative z-10">{label}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="p-6">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={period}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {loading ? <LoadingSpinner /> :
+                             error ? <p className="text-center text-red-400 p-4 bg-red-900/50 rounded-lg flex items-center gap-2 justify-center"><AlertTriangle size={16} /> {error}</p> :
+                             stats && (
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                    <StatCard title="Receita Bruta (GGR)" value={stats.gross_gaming_revenue_in_cents} icon={<DollarSign />} color="from-green-500 to-emerald-600" isCurrency />
+                                    <StatCard title="Total Depositado" value={stats.total_deposited_in_cents} icon={<Wallet />} color="from-blue-500 to-cyan-600" isCurrency />
+                                    <StatCard title="Novos Utilizadores" value={stats.new_users} icon={<Users />} color="from-purple-500 to-indigo-600" />
+                                    <StatCard title="Jogos Disputados" value={stats.games_played} icon={<Gamepad2 />} color="from-orange-500 to-red-600" />
+                                </div>
+                            )}
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </div>
         </div>
-      )}
     </div>
   );
 };

@@ -4,11 +4,12 @@ import { toast } from 'react-toastify';
 import { getAdminTickets } from '../../../services/api';
 import type { Ticket } from '../../../types';
 import PaginationControls from '../../Shared/PaginationControls';
-import TableSkeleton from '../../Shared/TableSkeleton';
+import { motion } from 'framer-motion';
+import { LifeBuoy, PlusCircle, MessageSquare, Clock, CheckCircle2, CircleDot } from 'lucide-react';
+import NewTicketModal from '../../Support/NewTicketModal';
 
-// Tipo para os dados processados que serão usados no estado do componente
 type ProcessedTicket = Ticket & {
-  relationships: any; // Mantemos os relacionamentos para encontrar o usuário
+  relationships: any;
 };
 
 const TicketList: React.FC = () => {
@@ -17,21 +18,18 @@ const TicketList: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  // Função para buscar os tickets com paginação
   const fetchTickets = async (page: number) => {
     setLoading(true);
     try {
       const response = await getAdminTickets(page);
-      
-      // Corrigido: Mapeia a resposta para a estrutura de dados correta e "plana"
-      const formattedTickets: ProcessedTicket[] = response.data.data.map(item => ({
-        ...item.attributes, // Espalha os atributos como subject, status, etc.
-        id: parseInt(item.id, 10), // Usa o ID principal, convertendo para número
-        relationships: item.relationships, // Mantém o objeto de relacionamentos
+      const formattedTickets: ProcessedTicket[] = response.data.data.map((item: any) => ({
+        ...item.attributes,
+        id: parseInt(item.id, 10),
+        relationships: item.relationships,
       }));
-
       setTickets(formattedTickets);
       setIncluded(response.data.included || []);
       setTotalPages(parseInt(response.headers['total-pages'] || '1'));
@@ -47,77 +45,105 @@ const TicketList: React.FC = () => {
     fetchTickets(currentPage);
   }, [currentPage]);
 
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-  };
-
   const findUserEmail = (userId: string) => {
     const user = included?.find(item => item.type === 'user' && item.id === userId);
     return user?.attributes?.email || 'N/A';
   };
 
-  // Mapeamento de status para classes de estilo e texto
   const getStatusInfo = (status: string) => {
     switch (status) {
-      case 'open':
-        return { label: 'Aberto', className: 'bg-green-100 text-green-800' };
-      case 'client_reply':
-        return { label: 'Cliente Respondeu', className: 'bg-yellow-100 text-yellow-800' };
-      case 'admin_reply':
-        return { label: 'Aguardando Cliente', className: 'bg-blue-100 text-blue-800' };
-      case 'closed':
-        return { label: 'Fechado', className: 'bg-gray-100 text-gray-800' };
-      default:
-        return { label: status, className: 'bg-gray-100 text-gray-800' };
+      case 'open': return { text: 'Aberto', icon: <Clock size={14} />, className: 'text-yellow-400 bg-yellow-500/10' };
+      case 'admin_reply': return { text: 'Respondido', icon: <MessageSquare size={14} />, className: 'text-blue-400 bg-blue-500/10' };
+      case 'client_reply': return { text: 'Resposta do Cliente', icon: <CircleDot size={14} />, className: 'text-purple-400 bg-purple-500/10' };
+      case 'closed': return { text: 'Fechado', icon: <CheckCircle2 size={14} />, className: 'text-green-400 bg-green-500/10' };
+      default: return { text: status, icon: null, className: 'bg-gray-700 text-gray-300' };
     }
   };
 
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Tickets de Suporte</h1>
-      <div className="bg-gray-800 shadow sm:rounded-lg">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-700">
-            <thead className="bg-gray-700">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Ticket</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Usuário</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Assunto</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Última Atualização</th>
-              </tr>
-            </thead>
-            <tbody className="bg-gray-800 divide-y divide-gray-700">
-              {loading ? <TableSkeleton cols={5} /> : tickets.map((ticket) => {
+  const renderContent = () => {
+    if (loading) return <div className="text-center text-gray-400 py-12">A carregar tickets...</div>;
+    if (tickets.length === 0) return <div className="text-center text-gray-400 py-12">Nenhum ticket encontrado.</div>;
+
+    return (
+        <div className="space-y-4">
+            {tickets.map((ticket, index) => {
                 const statusInfo = getStatusInfo(ticket.status);
                 return (
-                  <tr
-                    key={ticket.id}
-                    className="hover:bg-gray-700 cursor-pointer"
-                    onClick={() => navigate(`/admin/support/${ticket.ticket_number}`)}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-blue-400">{ticket.ticket_number}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-300">{findUserEmail(ticket.relationships.user.data.id)}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-200">{ticket.subject}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${statusInfo.className}`}>
-                        {statusInfo.label}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">{new Date(ticket.created_at).toLocaleString('pt-BR')}</td>
-                  </tr>
+                    <motion.div
+                        key={ticket.id}
+                        className="bg-white/5 p-4 rounded-lg border border-white/10 cursor-pointer transition-colors hover:bg-white/10"
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        onClick={() => navigate(`/admin/support/${ticket.ticket_number}`)}
+                    >
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm items-center">
+                            <div>
+                                <p className="text-xs text-gray-400">Ticket</p>
+                                <p className="font-mono font-bold text-white">#{ticket.ticket_number}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400">Utilizador</p>
+                                <p className="font-medium text-gray-300 truncate">{findUserEmail(ticket.relationships.user.data.id)}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400">Assunto</p>
+                                <p className="font-medium text-white truncate">{ticket.subject}</p>
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-400">Status</p>
+                                <div className={`flex items-center gap-2 text-xs font-semibold px-2 py-1 rounded-full ${statusInfo.className}`}>
+                                    {statusInfo.icon}
+                                    <span>{statusInfo.text}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
                 );
-              })}
-            </tbody>
-          </table>
+            })}
+        </div>
+    );
+  };
+
+  return (
+    <>
+      <div className="w-full">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+          <div>
+              <h1 className="text-2xl font-bold text-white flex items-center gap-3"><LifeBuoy /> Tickets de Suporte</h1>
+              <p className="text-sm text-gray-400 mt-1">Gira e responda aos tickets dos utilizadores.</p>
+          </div>
+          <motion.button 
+              onClick={() => setIsModalOpen(true)} 
+              className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-gradient-to-r from-yellow-400 to-yellow-600 text-black"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+          >
+            <PlusCircle size={16} />
+            Abrir Novo Ticket
+          </motion.button>
+        </div>
+
+        <div className="bg-black/30 backdrop-blur-md border border-white/10 shadow-2xl rounded-2xl p-6">
+          {renderContent()}
+          
+          {totalPages > 1 && (
+              <div className="mt-6">
+                  <PaginationControls
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={(page) => setCurrentPage(page)}
+                  />
+              </div>
+          )}
         </div>
       </div>
-      <PaginationControls
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={handlePageChange}
+      <NewTicketModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        onTicketCreated={() => fetchTickets(currentPage)} 
       />
-    </div>
+    </>
   );
 };
 
