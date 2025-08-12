@@ -60,6 +60,7 @@ const PendingGameCard = ({ game }: { game: ProcessedGame }) => {
         if (!cardEl) return;
         cardEl.style.transform = 'rotateY(0) rotateX(0) scale(1)';
     };
+    console.log(game)
 
     return (
         <div style={{ perspective: '1000px' }}>
@@ -127,18 +128,13 @@ const MyGamesPage: React.FC = () => {
   useEffect(() => {
     getGameHistory()
       .then(response => {
-        const includedData = response.data.included || [];
         const allGames: ProcessedGame[] = response.data.data.map((item: any) => {
-          const prizeRel = item.relationships?.prize.data;
-          const cardRel = item.relationships?.scratch_card.data;
-          const prize = includedData.find(inc => inc.id === prizeRel?.id && inc.type === 'prize');
-          const scratchCard = includedData.find(inc => inc.id === cardRel?.id && inc.type === 'scratch_card');
           return {
             ...item.attributes,
             id: parseInt(item.id, 10),
             status: item.attributes.status,
-            prize: { name: prize?.attributes.name || 'N/A' },
-            scratch_card: { name: scratchCard?.attributes.name || 'N/A' },
+            prize: { name: item.attributes?.prize.name },
+            scratch_card: { name: item.attributes?.scratch_card.name },
           };
         });
         setPendingGames(allGames.filter(game => game.status === 'pending'));
