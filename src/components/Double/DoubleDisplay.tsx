@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { Diamond } from 'lucide-react';
 
 interface DoubleDisplayProps {
@@ -118,11 +117,6 @@ const DoubleDisplay: React.FC<DoubleDisplayProps> = ({ status, timer, winningCol
     <div className="bg-black/30 backdrop-blur-md border-y-2 border-white/10 h-40 flex items-center overflow-hidden relative">
       {/* Ponteiro central */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-[100%] w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-yellow-400 z-20" />
-      
-      {/* ✅ CORREÇÃO AQUI: 'left-1/2' em vez de 'left-0'.
-        Isso alinha o ponto de partida do carrossel com o ponteiro central,
-        fazendo com que o cálculo de `translateX` funcione perfeitamente.
-      */}
       <div className="absolute left-1/2 flex h-full items-center gap-2" style={spinnerStyle}>
         {spinnerItems.map((color, index) => (
           <div

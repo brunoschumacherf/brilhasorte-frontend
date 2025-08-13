@@ -65,7 +65,8 @@ export const useDoubleGame = () => {
 
     subscriptionRef.current = consumer.subscriptions.create("DoubleGameChannel", {
       connected: () => console.log("Conectado ao DoubleGameChannel!"),
-      received: (data: any) => {
+      
+      received: (data: any): void => {
         switch (data.type) {
           case 'current_state':
           case 'new_round':
@@ -104,7 +105,7 @@ export const useDoubleGame = () => {
     return () => {
       clearTimer();
       if (subscriptionRef.current) {
-        consumer.subscriptions.remove(subscriptionRef.current);
+        subscriptionRef.current.unsubscribe();
         subscriptionRef.current = null;
       }
     };
