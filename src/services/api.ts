@@ -30,7 +30,8 @@ import type {
   RevealApiResponse,
   CashoutApiResponse,
   TowerGame,
-  LimboGame
+  LimboGame,
+  DoubleGameRound
 } from '../types';
 
 const api = axios.create({
@@ -172,10 +173,18 @@ export const playGameLimbo = (bet_amount_in_cents: number, target_multiplier: nu
     limbo_game: { bet_amount_in_cents, target_multiplier },
   });
 
+export const placeDoubleBet = (bet_amount_in_cents: number, color: 'black' | 'red' | 'white') =>
+  api.post('/api/v1/double_games/place_bet', { bet_amount_in_cents, color });
+
+export const triggerDoubleDraw = () => api.post('/api/v1/double_games/trigger_draw');
+
 export const getLimboHistory = () =>
   api.get<JsonApiCollection<LimboGame>>('/api/v1/limbo_games/history');
 
+export const getDoubleHistory = () => api.get<JsonApiCollection<DoubleGameRound>>('/api/v1/double_games/history');
 
 export const getAdminTowerGames = (page = 1) => api.get<JsonApiCollection<TowerGame>>(`/api/v1/admin/tower_games?page=${page}`);
 export const getAdminLimboGames = (page = 1) => api.get<JsonApiCollection<LimboGame>>(`api/v1/admin/limbo_games?page=${page}`);
+export const getAdminDoubleGames = (page = 1) => api.get<JsonApiCollection<DoubleGameRound>>(`/api/v1/admin/double_games?page=${page}`);
+
 export default api;

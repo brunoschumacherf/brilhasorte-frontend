@@ -39,6 +39,8 @@ import TowerGamePage from './pages/TowerGamePage';
 import LimboGamePage from './pages/LimboGamePage';
 import TowerGamesPage from './pages/Admin/TowerGamesPage';
 import LimboGamesPage from './pages/Admin/LimboGamesPage'; 
+import DoubleGamesPage from './pages/Admin/DoubleGamesPage'; 
+import DoubleGamePage from './pages/DoubleGamePage';
 
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -72,6 +74,7 @@ function App() {
             <Route path="rankings" element={<RankingsPage />} />
             <Route path="referrals" element={<ReferralsPage />} />
             <Route path="support" element={<SupportPage />} /> {/* Nova Rota */}
+            <Route path="double" element={<DoubleGamePage />} /> 
             <Route path="support/:ticketNumber" element={<TicketDetailPage />} /> {/* Nova Rota */}
           </Route>
 
@@ -84,6 +87,7 @@ function App() {
             <Route path="games" element={<AdminGamesPage />} />
             <Route path="tower" element={<TowerGamesPage />} />
             <Route path="limbo" element={<LimboGamesPage />} />
+            <Route path="double" element={<DoubleGamesPage />} />
             <Route path="plinko-games" element={<PlinkoGamesPage />} />
             <Route path="mines-games" element={<MinesGamesPage />} />
             <Route path="bonus-codes" element={<BonusCodesPage />} />

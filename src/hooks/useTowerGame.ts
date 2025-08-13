@@ -1,4 +1,3 @@
-// src/hooks/useTowerGame.ts
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { createTowerGame, getActiveTowerGame, playTowerGame, cashOutTowerGame, getTowerGameConfig } from '../services/api';

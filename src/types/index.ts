@@ -412,3 +412,24 @@ export interface LimboGame {
   status: 'won' | 'lost';
   created_at: string;
 }
+
+
+export interface DoubleGameBet {
+  status: string;
+  winnings_in_cents: number;
+  id: number;
+  bet_amount_in_cents: number;
+  color: 'black' | 'red' | 'white';
+  user: {
+    id: number;
+    full_name: string;
+  };
+}
+
+export interface DoubleGameRound {
+  id: number;
+  status: 'betting' | 'spinning' | 'completed';
+  winning_color?: 'black' | 'red' | 'white';
+  bets: DoubleGameBet[];
+  created_at: string;
+}

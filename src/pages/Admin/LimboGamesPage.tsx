@@ -32,7 +32,6 @@ const LimboGamesPage: React.FC = () => {
     fetchGames(currentPage);
   }, [currentPage]);
 
-  // ✨ CORRIGIDO: A função de controlo da paginação está corretamente implementada.
   const handlePageChange = (newPage: number) => {
     if (newPage > 0 && newPage <= totalPages) {
       setCurrentPage(newPage);
