@@ -1,10 +1,9 @@
-// src/hooks/useLimboGame.ts
 import { useState, useCallback, useEffect } from 'react';
 import { toast } from 'react-toastify';
 import { playGameLimbo, getLimboHistory } from '../services/api';
 import type { LimboGame } from '../types';
+import { useAuth } from '../contexts/AuthContext';
 
-// Função auxiliar para converter os atributos da API para o tipo correto
 const parseGameAttributes = (item: { attributes: any, id: string }): LimboGame => {
   const attributes = item.attributes;
   return {
@@ -21,6 +20,7 @@ export const useLimboGame = () => {
   const [history, setHistory] = useState<LimboGame[]>([]);
   const [lastResult, setLastResult] = useState<LimboGame | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { user, updateUserDetails } = useAuth();
 
   const fetchHistory = useCallback(async () => {
     try {
@@ -37,21 +37,29 @@ export const useLimboGame = () => {
   }, [fetchHistory]);
 
   const playGame = async (betInCents: number, targetMultiplier: number) => {
+    if (!user) return;
+    
+    const originalBalance = user.balance_in_cents;
+    updateUserDetails({ balance_in_cents: originalBalance - betInCents });
+
     setIsLoading(true);
-    setLastResult(null); // Limpa o resultado anterior para iniciar a nova animação
+    setLastResult(null);
     try {
       const response = await playGameLimbo(betInCents, targetMultiplier);
       const newResult = parseGameAttributes(response.data.data);
       
-      // Define o resultado imediatamente. A animação será controlada pelo LimboDisplay.
       setLastResult(newResult);
-      setHistory(prev => [newResult, ...prev.slice(0, 9)]);
+      setHistory(prev => [newResult, ...prev.slice(0, 14)]);
+
+      if (user && newResult.winnings_in_cents > 0) {
+        updateUserDetails({ balance_in_cents: originalBalance - betInCents + newResult.winnings_in_cents });
+      }
 
     } catch (err: any) {
       toast.error(err.response?.data?.error || 'Não foi possível realizar a aposta.');
-      setIsLoading(false); // Libera o botão em caso de erro
+      updateUserDetails({ balance_in_cents: originalBalance });
+      setIsLoading(false);
     }
-    // O isLoading será setado para false pelo LimboDisplay após a animação.
   };
 
   return { history, lastResult, isLoading, setIsLoading, playGame };
