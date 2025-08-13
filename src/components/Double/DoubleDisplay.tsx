@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { Diamond } from 'lucide-react';
 
 interface DoubleDisplayProps {
