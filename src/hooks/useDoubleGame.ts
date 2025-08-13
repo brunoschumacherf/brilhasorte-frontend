@@ -1,4 +1,3 @@
-// src/hooks/useDoubleGame.ts
 import { useState, useEffect, useRef, useCallback } from 'react';
 import consumer from '../services/cable';
 import { triggerDoubleDraw, getDoubleHistory } from '../services/api';
