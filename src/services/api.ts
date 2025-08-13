@@ -176,4 +176,6 @@ export const getLimboHistory = () =>
   api.get<JsonApiCollection<LimboGame>>('/api/v1/limbo_games/history');
 
 
+export const getAdminTowerGames = (page = 1) => api.get<JsonApiCollection<TowerGame>>(`/api/v1/admin/tower_games?page=${page}`);
+export const getAdminLimboGames = (page = 1) => api.get<JsonApiCollection<LimboGame>>(`api/v1/admin/limbo_games?page=${page}`);
 export default api;

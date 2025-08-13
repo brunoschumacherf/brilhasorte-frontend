@@ -29,15 +29,16 @@ import BonusCodesPage from './pages/Admin/BonusCodesPage';
 import ScratchCardsPage from './pages/Admin/ScratchCardsPage';
 import SupportPage from './pages/SupportPage';
 import TicketDetailPage from './pages/TicketDetailPage';
-import AdminSupportPage from './pages/Admin/SupportPage'; // Criar esta página
-import AdminSupportDetailPage from './pages/Admin/SupportDetailPage'; // Criar esta página
-import MinesPage from './pages/MinesPage'; // 1. Importe a nova página
-import MinesGamesPage from './pages/Admin/MinesGamesPage'; // 1. Importe a nova página
-import PlinkoPage from './pages/PlinkoPage'; // 1. Importe a nova página
-import PlinkoGamesPage from './pages/Admin/PlinkoGamesPage'; // 1. Importe a página
+import AdminSupportPage from './pages/Admin/SupportPage';
+import AdminSupportDetailPage from './pages/Admin/SupportDetailPage';
+import MinesPage from './pages/MinesPage';
+import MinesGamesPage from './pages/Admin/MinesGamesPage'; 
+import PlinkoPage from './pages/PlinkoPage'
+import PlinkoGamesPage from './pages/Admin/PlinkoGamesPage'; 
 import TowerGamePage from './pages/TowerGamePage';
 import LimboGamePage from './pages/LimboGamePage';
-
+import TowerGamesPage from './pages/Admin/TowerGamesPage';
+import LimboGamesPage from './pages/Admin/LimboGamesPage'; 
 
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -81,6 +82,8 @@ function App() {
             <Route path="deposits" element={<DepositsPage />} />
             <Route path="withdrawals" element={<WithdrawalsPage />} />
             <Route path="games" element={<AdminGamesPage />} />
+            <Route path="tower" element={<TowerGamesPage />} />
+            <Route path="limbo" element={<LimboGamesPage />} />
             <Route path="plinko-games" element={<PlinkoGamesPage />} />
             <Route path="mines-games" element={<MinesGamesPage />} />
             <Route path="bonus-codes" element={<BonusCodesPage />} />

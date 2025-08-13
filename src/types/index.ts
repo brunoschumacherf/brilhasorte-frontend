@@ -54,6 +54,9 @@ export interface AdminWithdrawalListItem {
 }
 
 export interface AdminGameListItem {
+  result_multiplier: ReactNode;
+  bet_amount_in_cents: number;
+  target_multiplier: ReactNode;
   attributes: any;
   relationships: any;
   id: number;
@@ -383,6 +386,7 @@ export interface CashoutApiResponse {
 }
 
 export interface TowerGame {
+  user: any;
   id: number;
   difficulty: 'easy' | 'medium' | 'hard' | 'expert' | 'legendary';
   bet_amount_in_cents: number;
@@ -399,6 +403,7 @@ export interface TowerGame {
 
 
 export interface LimboGame {
+  user: any;
   id: number;
   bet_amount_in_cents: number;
   target_multiplier: number;
