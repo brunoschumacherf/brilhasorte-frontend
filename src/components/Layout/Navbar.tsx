@@ -11,6 +11,9 @@ const gameNavItems = [
   { label: 'Mines', to: '/mines', icon: <Gamepad2 size={16} /> },
   { label: 'Double', to: '/double', icon: <Gamepad2 size={16} /> },
   { label: 'Plinko', to: '/plinko', icon: <Gamepad2 size={16} /> },
+  { label: 'Double', to: '/double', icon: <Gamepad2 size={16} /> },
+  { label: 'Tower', to: '/tower', icon: <Gamepad2 size={16} /> },
+  { label: 'Limpo', to: '/limbo', icon: <Gamepad2 size={16} /> },
 ];
 
 const accountNavItems = [

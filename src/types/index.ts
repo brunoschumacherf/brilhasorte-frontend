@@ -54,6 +54,9 @@ export interface AdminWithdrawalListItem {
 }
 
 export interface AdminGameListItem {
+  result_multiplier: ReactNode;
+  bet_amount_in_cents: number;
+  target_multiplier: ReactNode;
   attributes: any;
   relationships: any;
   id: number;
@@ -380,4 +383,53 @@ export interface CashoutApiResponse {
   status: string;
   winnings: number;
   payload: MinesGamePayload;
+}
+
+export interface TowerGame {
+  user: any;
+  id: number;
+  difficulty: 'easy' | 'medium' | 'hard' | 'expert' | 'legendary';
+  bet_amount_in_cents: number;
+  status: 'active' | 'cashed_out' | 'lost';
+  current_level: number;
+  payout_multiplier: number;
+  winnings_in_cents: number;
+  created_at: string;
+  current_winnings: number;
+  next_potential_winnings?: number;
+  revealed_level?: ('diamond' | 'bomb')[];
+  player_choices: number[];
+}
+
+
+export interface LimboGame {
+  user: any;
+  id: number;
+  bet_amount_in_cents: number;
+  target_multiplier: number;
+  result_multiplier: number;
+  winnings_in_cents: number;
+  status: 'won' | 'lost';
+  created_at: string;
+}
+
+
+export interface DoubleGameBet {
+  status: string;
+  winnings_in_cents: number;
+  id: number;
+  bet_amount_in_cents: number;
+  color: 'black' | 'red' | 'white';
+  user: {
+    id: number;
+    full_name: string;
+  };
+}
+
+export interface DoubleGameRound {
+  id: number;
+  status: 'betting' | 'spinning' | 'completed';
+  winning_color?: 'black' | 'red' | 'white';
+  bets: DoubleGameBet[];
+  created_at: string;
 }

@@ -28,7 +28,10 @@ import type {
   AdminPlinkoGameListItem,
   GameApiResponse,
   RevealApiResponse,
-  CashoutApiResponse
+  CashoutApiResponse,
+  TowerGame,
+  LimboGame,
+  DoubleGameRound
 } from '../types';
 
 const api = axios.create({
@@ -147,5 +150,41 @@ export const createAdminTicketReply = (ticketNumber: string, message: string, cl
 
 export const approveAdminWithdrawal = (withdrawalId: string) =>
   api.patch(`/api/v1/admin/withdrawals/${withdrawalId}/approve`);
+
+
+export const createTowerGame = (difficulty: string, bet_amount_in_cents: number) =>
+  api.post<JsonApiSingular<TowerGame>>('/api/v1/tower_games', {
+    tower_game: { difficulty, bet_amount_in_cents },
+  });
+
+export const playTowerGame = (gameId: number, choice_index: number) =>
+  api.post<JsonApiSingular<TowerGame>>(`/api/v1/tower_games/${gameId}/play`, { choice_index });
+
+export const cashOutTowerGame = (gameId: number) =>
+  api.post<JsonApiSingular<TowerGame>>(`/api/v1/tower_games/${gameId}/cash_out`);
+
+export const getActiveTowerGame = () =>
+  api.get<JsonApiSingular<TowerGame>>('/api/v1/tower_games/active_game');
+
+export const getTowerGameConfig = () => api.get('/api/v1/game_settings/tower');
+
+export const playGameLimbo = (bet_amount_in_cents: number, target_multiplier: number) =>
+  api.post<JsonApiSingular<LimboGame>>('/api/v1/limbo_games', {
+    limbo_game: { bet_amount_in_cents, target_multiplier },
+  });
+
+export const placeDoubleBet = (bet_amount_in_cents: number, color: 'black' | 'red' | 'white') =>
+  api.post('/api/v1/double_games/place_bet', { bet_amount_in_cents, color });
+
+export const triggerDoubleDraw = () => api.post('/api/v1/double_games/trigger_draw');
+
+export const getLimboHistory = () =>
+  api.get<JsonApiCollection<LimboGame>>('/api/v1/limbo_games/history');
+
+export const getDoubleHistory = () => api.get<JsonApiCollection<DoubleGameRound>>('/api/v1/double_games/history');
+
+export const getAdminTowerGames = (page = 1) => api.get<JsonApiCollection<TowerGame>>(`/api/v1/admin/tower_games?page=${page}`);
+export const getAdminLimboGames = (page = 1) => api.get<JsonApiCollection<LimboGame>>(`api/v1/admin/limbo_games?page=${page}`);
+export const getAdminDoubleGames = (page = 1) => api.get<JsonApiCollection<DoubleGameRound>>(`/api/v1/admin/double_games?page=${page}`);
 
 export default api;

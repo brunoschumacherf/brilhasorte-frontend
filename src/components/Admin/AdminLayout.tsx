@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Gamepad2, ArrowDownCircle, ArrowUpCircle, Gift, Ticket, LifeBuoy, Bomb, Gem, Menu } from 'lucide-react';
+import { LayoutDashboard, Users, Gamepad2, ArrowDownCircle, ArrowUpCircle, Gift, Ticket, LifeBuoy, Bomb, Gem, Menu, TowerControl, Rocket, Dices } from 'lucide-react';
 
 const SidebarNavLink = ({ to, icon, children }: { to: string, icon: React.ReactNode, children: React.ReactNode }) => {
     const navLinkClasses = ({ isActive }: { isActive: boolean }) =>
@@ -31,6 +31,10 @@ const SidebarContent = () => (
             <SidebarNavLink to="/admin/support" icon={<LifeBuoy size={20} className="mr-3" />}>Suporte</SidebarNavLink>
             <SidebarNavLink to="/admin/mines-games" icon={<Bomb size={20} className="mr-3" />}>Jogos Mines</SidebarNavLink>
             <SidebarNavLink to="/admin/plinko-games" icon={<Gem size={20} className="mr-3" />}>Jogos Plinko</SidebarNavLink>
+            <SidebarNavLink to="/admin/tower"icon={<TowerControl size={20} className="mr-3" />}> Tower</SidebarNavLink>
+            <SidebarNavLink to="/admin/limbo" icon={<Rocket size={20} className="mr-3" />}>Limbo</SidebarNavLink>
+            <SidebarNavLink to="/admin/double" icon={<Dices size={20} className="mr-3" />}>Double</SidebarNavLink>
+
         </nav>
         <div className="p-4 border-t border-zinc-700">
             <NavLink to="/games" className="text-sm text-gray-400 hover:text-white transition-colors">

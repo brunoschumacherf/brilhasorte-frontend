@@ -29,14 +29,18 @@ import BonusCodesPage from './pages/Admin/BonusCodesPage';
 import ScratchCardsPage from './pages/Admin/ScratchCardsPage';
 import SupportPage from './pages/SupportPage';
 import TicketDetailPage from './pages/TicketDetailPage';
-import AdminSupportPage from './pages/Admin/SupportPage'; // Criar esta página
-import AdminSupportDetailPage from './pages/Admin/SupportDetailPage'; // Criar esta página
-import MinesPage from './pages/MinesPage'; // 1. Importe a nova página
-import MinesGamesPage from './pages/Admin/MinesGamesPage'; // 1. Importe a nova página
-import PlinkoPage from './pages/PlinkoPage'; // 1. Importe a nova página
-import PlinkoGamesPage from './pages/Admin/PlinkoGamesPage'; // 1. Importe a página
-
-
+import AdminSupportPage from './pages/Admin/SupportPage';
+import AdminSupportDetailPage from './pages/Admin/SupportDetailPage';
+import MinesPage from './pages/MinesPage';
+import MinesGamesPage from './pages/Admin/MinesGamesPage'; 
+import PlinkoPage from './pages/PlinkoPage'
+import PlinkoGamesPage from './pages/Admin/PlinkoGamesPage'; 
+import TowerGamePage from './pages/TowerGamePage';
+import LimboGamePage from './pages/LimboGamePage';
+import TowerGamesPage from './pages/Admin/TowerGamesPage';
+import LimboGamesPage from './pages/Admin/LimboGamesPage'; 
+import DoubleGamesPage from './pages/Admin/DoubleGamesPage'; 
+import DoubleGamePage from './pages/DoubleGamePage';
 
 
 const PrivateRoute: React.FC<{ children: ReactNode }> = ({ children }) => {
@@ -62,13 +66,15 @@ function App() {
             <Route path="games" element={<GamesPage />} />
             <Route path="my-games" element={<MyGamesPage />} />
             <Route path="/plinko" element={<PlinkoPage />} /> {/* 2. Adicione a rota */}
-
+            <Route path="tower" element={<TowerGamePage />} /> {/* ROTA ADICIONADA AQUI */}
+            <Route path="limbo" element={<LimboGamePage />} /> {/* ROTA ADICIONADA AQUI */}
             <Route path="games/:gameId" element={<GameRevealPage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="history" element={<HistoryPage />} />
             <Route path="rankings" element={<RankingsPage />} />
             <Route path="referrals" element={<ReferralsPage />} />
             <Route path="support" element={<SupportPage />} /> {/* Nova Rota */}
+            <Route path="double" element={<DoubleGamePage />} /> 
             <Route path="support/:ticketNumber" element={<TicketDetailPage />} /> {/* Nova Rota */}
           </Route>
 
@@ -79,6 +85,9 @@ function App() {
             <Route path="deposits" element={<DepositsPage />} />
             <Route path="withdrawals" element={<WithdrawalsPage />} />
             <Route path="games" element={<AdminGamesPage />} />
+            <Route path="tower" element={<TowerGamesPage />} />
+            <Route path="limbo" element={<LimboGamesPage />} />
+            <Route path="double" element={<DoubleGamesPage />} />
             <Route path="plinko-games" element={<PlinkoGamesPage />} />
             <Route path="mines-games" element={<MinesGamesPage />} />
             <Route path="bonus-codes" element={<BonusCodesPage />} />
