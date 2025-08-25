@@ -75,7 +75,9 @@ export const getDepositHistory = () => api.get<JsonApiCollection<DepositHistoryI
 export const createWithdrawal = (withdrawalData: WithdrawalRequest) => 
   api.post('/api/v1/withdrawals', { withdrawal: withdrawalData });
 export const getWithdrawalHistory = () => api.get<JsonApiCollection<WithdrawalHistoryItem>>('/api/v1/withdrawals');
-
+export const cancelWithdrawal = (id: number) => {
+  return api.post(`api/v1/withdrawals/${id}/cancel`);
+};
 // --- Social e Outros ---
 export type RankingPeriod = 'daily' | 'weekly' | 'monthly' | 'all_time';
 export const getRankings = (period: RankingPeriod) => 
