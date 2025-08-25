@@ -75,6 +75,7 @@ const WithdrawalList: React.FC = () => {
       case 'pending': return { text: 'Pendente', icon: <Clock size={14} />, className: 'text-yellow-400 bg-yellow-500/10' };
       case 'processing': return { text: 'Processando', icon: <Loader size={14} className="animate-spin" />, className: 'text-blue-400 bg-blue-500/10' };
       case 'failed': return { text: 'Falhou', icon: <XCircle size={14} />, className: 'text-red-400 bg-red-500/10' };
+      case 'canceled': return { text: 'Cancelado', icon: <XCircle size={14} />, className: 'text-red-400 bg-red-500/10' };
       default: return { text: status, icon: null, className: 'text-gray-400 bg-gray-500/10' };
     }
   };
